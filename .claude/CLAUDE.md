@@ -1,94 +1,198 @@
-# Nurdle DNA — Claude Code Project Brain
+# NurdleDNA — Claude Code Project Brain
 
 ## Project Overview
 
-**Nurdle DNA** is a microplastic detection and analysis system built for ECTE 250, Team 2.  
-Nurdles are pre-production plastic pellets; this system detects their presence using a hardware sensor device and presents the data through an interactive web platform with 3D visualisation.
+**NurdleDNA** — ECTE 250, Team 2 (Arc Tech)  
+**Team:** Muhammad Haaziq (8927133), Faaz Ali Sayyed (8943564), Daniel Koshy (8938799), Mohammed Abdul Rahman (9070734)  
+**Context:** UAE — industrial ports, polymer plants, pellet handling facilities  
+**Theme:** Industry 4.0, Humanitarian Engineering, Environment
+
+An inline IoT water monitoring unit that detects nurdle microplastics and industrial contaminants, automatically isolates flow, captures physical evidence, and logs audit-grade data to the cloud.
 
 ---
 
-## Workstreams
+## Core Architecture: Detect → Classify → Actuate → Capture → Report
 
-| Workstream | Location | Status |
-|-----------|---------|--------|
-| Website (React/Next.js) | `Website/` | Friend's code to be merged |
-| 3D Virtual Simulation | `Virtual Simulation/` | To be built |
-| CAD Source Files | `Fusion Files/` | Fusion 360 .f3d files |
-| Deliverable Reports | `Deliverable Reports/` | PDFs (complete) |
-| Posters | `Posters/` | To be added |
-| Team Info | `Team Information/` | To be added |
+```
+Water inlet
+  → Mixing section (anti-settling)
+  → Optical flow cell (camera + UV LED + LDR)
+  → Servo pinch valve (controlled by Arduino)
+  → Evidence cartridge + load cell (HX711)
+  → Outlet / waste
+  
+Headspace → MQ gas sensor
+```
+
+---
+
+## Dual-Processor Design
+
+| Processor | Role |
+|-----------|------|
+| **NVIDIA Jetson Nano** | AI vision (YOLOv8n / OpenCV), dashboard, cloud IoT transmission |
+| **Arduino Uno/Nano** | Reads analog sensors, controls servo valve, runs FSM outputs, drives LCD/LEDs/buzzer |
+| **Communication** | USB Serial — JSON messages (see Serial Protocol below) |
+
+---
+
+## Serial Communication Protocol (Jetson ↔ Arduino)
+
+**Jetson → Arduino** (commands):
+```json
+{"state": "WARN|CRIT|CLEAR", "confidence": 0.85, "count": 12}
+```
+
+**Arduino → Jetson** (telemetry, every 200ms):
+```json
+{"fsm_state": "S1|S2|S3|S4", "valve": "OPEN|CLOSED",
+ "ldr": 542, "gas": 380, "load_g": 3.4}
+```
+
+This protocol must be agreed and frozen before breadboard integration (Deliverable 5).
+
+---
+
+## 5-State Moore FSM
+
+| State | Name | Valve | LEDs | Buzzer | Trigger |
+|-------|------|-------|------|--------|---------|
+| S0 | INIT | OPEN | All ON | OFF | Power-up |
+| S1 | SysOk | OPEN | Green | OFF | No hazard |
+| S2 | Causn | OPEN | Yellow | OFF | WARN input |
+| S3 | ALRM | CLOSED | Red | ON | CRIT input (latched) |
+| S4 | RSTIN | OPEN | All ON | OFF | RST button |
+
+FSM inputs: `WARN` (low contamination), `CRIT` (high contamination OR gas leak), `RST` (operator button)  
+FSM is latched in S3 — can only exit via operator RST button.
+
+---
+
+## Sensors & Actuators
+
+| Component | Part | Purpose |
+|-----------|------|---------|
+| Camera | Jetson Nano CSI/USB | AI nurdle detection (YOLOv8n) |
+| UV LED ring | 365nm LED | Fluorescence excitation for forensic classification |
+| LDR | Analog to Arduino A0 | Turbidity proxy (TinkerCAD simulation) |
+| Gas sensor | MQ-135 or MQ-4 | VOC / gas leak detection in headspace |
+| Load cell | 1–5kg + HX711 | Measures mass of captured particles |
+| Servo valve | MG996R | Pinch valve — closes on ALARM |
+| Peristaltic pump | DC pump | Continuous closed-loop water flow |
+| LCD/OLED | I2C 16×2 | Local status display |
+| RGB LEDs + Buzzer | GPIO | Visual and audio alerts |
+
+---
+
+## Current Arduino Code Status (as of D3)
+
+The submitted code has:
+- ✅ Basic 3-sensor FSM logic (LDR, gas, chemical/potentiometer)
+- ✅ Servo valve control
+- ✅ LCD feedback
+- ✅ Latched alarm + reset button
+- ❌ HX711 load cell reading (not implemented)
+- ❌ Serial communication with Jetson Nano (not implemented)
+- ❌ Firebase / IoT cloud transmission (not implemented)
+- ❌ UV LED control (not implemented)
+- ❌ Debounce / confidence window (single spike triggers alarm)
+
+---
+
+## IoT Data Packet (Firebase Schema)
+
+```json
+{
+  "timestamp": "2026-05-08T14:32:00Z",
+  "device_id": "NURDLE-001",
+  "bay_id": "BAY-1",
+  "density_index": 72,
+  "status": "ALARM",
+  "grams_captured": 3.4,
+  "dna_source": "SOURCE-B",
+  "gas_ppm": 120,
+  "temperature": 24.5,
+  "fsm_state": "S3",
+  "valve": "CLOSED"
+}
+```
+
+**Cloud platform:** Firebase Realtime Database  
+**Transmission:** Jetson Nano → Firebase via `pyrebase4` or REST API  
+**Website:** Next.js subscribes via Firebase SDK
+
+---
+
+## Website Dashboard Pages
+
+1. **Live Monitor** — Density Index gauge, FSM state badge (green/yellow/red), live sensor readings, valve status
+2. **Event Log** — table of all alarm events; CSV export
+3. **Bay Map** — multi-site bay selector; highlights which bay is in ALARM
+4. **Device Health** — uptime, last communication timestamp
+
+---
+
+## 3D Virtual Simulation (React Three Fiber)
+
+Mirrors the real device behaviour — driven by Firebase live data:
+
+| Layer | Shows | Source |
+|-------|-------|--------|
+| Device viewer | Fusion 360 glTF model; hover each component for label | Static glTF |
+| Flow animation | Particle system: nurdles flowing through tube → chamber → cartridge | Animated (Three.js) |
+| FSM state | Colour ring: green/yellow/red; valve mesh pinches shut on ALARM | Firebase realtime |
+| Dashboard overlay | Density Index, grams captured, event log | Firebase realtime |
+
+**Fusion 360 export:** File > Export > glTF 2.0 → `Virtual Simulation/models/device-main.glb`
 
 ---
 
 ## Tech Stack
 
-- **Website**: Next.js (App Router), TypeScript, React
-- **3D Simulation**: React Three Fiber (`@react-three/fiber`) + Three.js + `@react-three/drei`
-- **CAD Pipeline**: Autodesk Fusion 360 → export as glTF 2.0 → load via `useGLTF` hook
-- **Styling**: TBD (Tailwind CSS recommended)
-- **Testing**: Vitest (unit), Playwright (E2E)
-
----
-
-## Three Simulation Layers
-
-1. **Device 3D Viewer** — interactive rotate/zoom of the detection hardware (glTF from Fusion 360)
-2. **Environmental Animation** — particle system simulating nurdle movement in water
-3. **Sensor Data Dashboard** — 3D heatmap / charts from real-time or recorded sensor data
+| Layer | Technology |
+|-------|-----------|
+| Website | Next.js (App Router), TypeScript |
+| 3D Simulation | React Three Fiber + @react-three/drei |
+| Cloud DB | Firebase Realtime Database |
+| Embedded AI | NVIDIA Jetson Nano — YOLOv8n (ONNX) or OpenCV |
+| Microcontroller | Arduino Uno/Nano |
+| Styling | TBD (Tailwind CSS recommended) |
 
 ---
 
 ## Mandatory Development Loop
 
-**Every task must follow this loop — no exceptions:**
-
 ```
 1. TASK    → Define what you're building and why
 2. BUILD   → Implement the change
-3. VERIFY  → Confirm it works (screenshot the UI or run automated tests)
-```
-
-Never mark a task complete without verification evidence.
-
----
-
-## Key Workflows
-
-### Exporting from Fusion 360
-1. Open design in Autodesk Fusion 360
-2. File > Export > Format: **glTF 2.0**
-3. Save to `Virtual Simulation/models/`
-4. Load in React Three Fiber: `const { scene } = useGLTF('/models/device.glb')`
-
-### Running the Website (fill in when code arrives)
-```bash
-cd Website
-npm install
-npm run dev   # http://localhost:3000
-```
-
-### Adding a New Feature
-```bash
-git checkout -b feature/your-feature-name
-# ... build and verify ...
-git add <specific files>
-git commit -m "feat: describe the change"
-# open PR on GitHub
+3. VERIFY  → Confirm it works (screenshot or test output — no exceptions)
 ```
 
 ---
 
-## Rules
+## Deliverables Remaining
 
-All development must follow the rules in `.claude/rules/`:
-- `workflow.md` — TDD loop, branch strategy, planning requirements
-- `design_rules.md` — UI/UX standards (responsive, accessible, dark-mode-ready)
-- `tech_defaults.md` — Next.js, TypeScript, React Three Fiber conventions
+| # | Deliverable | Key items |
+|---|------------|-----------|
+| D4 | TinkerCAD Prototype | Full FSM demo with all I/O |
+| D5 | Breadboard Prototype | HX711, serial protocol, calibrated thresholds, debounce |
+| D6 | Final Design Report | Calibration table, accuracy metrics, response time, AI model spec |
+| D7 | Final Presentation | Block diagram, FSM, demo results, key decisions |
+| D8 | Innovation Fair | Rehearsed 3-min demo, poster, live device |
 
 ---
 
-## Agents Available
+## Folder Map
 
-- `agents/researcher.md` — web research, docs lookup, microplastics data
-- `agents/code_reviewer.md` — static code analysis, 3D performance review
-- `agents/qa.md` — test generation for components and E2E flows
+```
+Nurdle DNA/
+├── Website/              ← Next.js app (friend's code, pending)
+├── Virtual Simulation/
+│   ├── models/           ← glTF exports from Fusion 360 (.glb)
+│   └── README.md
+├── Fusion Files/         ← Autodesk Fusion 360 .f3d source files
+├── Deliverable Reports/  ← Deliverable 2 + 3 PDFs
+├── Posters/
+├── Team Information/
+└── .claude/              ← Claude Code workspace
+```

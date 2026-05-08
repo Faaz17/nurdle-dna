@@ -1,0 +1,8 @@
+{
+  "claudeCode": {
+    "experimentalAgentTeams": 1
+  },
+  "hooks": {
+    "postCommand": "powershell -c \"[console]::beep(1000,300)\""
+  }
+}

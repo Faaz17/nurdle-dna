@@ -1,0 +1,29 @@
+# Claude Code — local/private files (never commit these)
+.claude/CLAUDE.local.md
+.claude/settings.local.json
+.claude/.mcp.json
+
+# Website — React / Next.js
+node_modules/
+.next/
+out/
+dist/
+build/
+.env
+.env.local
+.env.*.local
+
+# Autodesk Fusion 360 autosave / cache
+*.f3d.autosave
+Backup/
+
+# Large binary 3D exports — uncomment once files are finalised
+# *.fbx
+# *.obj
+# *.gltf
+# *.glb
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini

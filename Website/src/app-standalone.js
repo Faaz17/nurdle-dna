@@ -215,10 +215,10 @@ const world = new THREE.Group();
 scene.add(world);
 
 const materials = {
-  concrete: new THREE.MeshStandardMaterial({ color: 0x5b6762, roughness: 0.82, metalness: 0.04 }),
-  darkConcrete: new THREE.MeshStandardMaterial({ color: 0x2b3431, roughness: 0.9 }),
-  paintedSteel: new THREE.MeshStandardMaterial({ color: 0xdde7df, roughness: 0.45, metalness: 0.38 }),
-  steel: new THREE.MeshStandardMaterial({ color: 0x9badab, roughness: 0.35, metalness: 0.66 }),
+  concrete: new THREE.MeshStandardMaterial({ color: 0x2c3a3e, roughness: 0.92, metalness: 0.04 }),
+  darkConcrete: new THREE.MeshStandardMaterial({ color: 0x18221f, roughness: 0.95 }),
+  paintedSteel: new THREE.MeshStandardMaterial({ color: 0x6c7a82, roughness: 0.48, metalness: 0.42 }),
+  steel: new THREE.MeshStandardMaterial({ color: 0x7c8d96, roughness: 0.38, metalness: 0.7 }),
   yellow: new THREE.MeshStandardMaterial({ color: 0xffbf4b, roughness: 0.5, metalness: 0.18 }),
   red: new THREE.MeshStandardMaterial({ color: 0xe54843, roughness: 0.45, metalness: 0.18, emissive: 0x330000 }),
   green: new THREE.MeshStandardMaterial({ color: 0x43e08a, roughness: 0.45, metalness: 0.16, emissive: 0x043d1b }),
@@ -269,10 +269,12 @@ setScene(0, true);
 animate();
 
 function setupLights() {
-  const hemi = new THREE.HemisphereLight(0xdff7ef, 0x15201d, 1.65);
+  // Cooler, dimmer ambient — gives objects room to read against the dark sky
+  const hemi = new THREE.HemisphereLight(0xb8d4dc, 0x0d1b1f, 0.92);
   scene.add(hemi);
 
-  const sun = new THREE.DirectionalLight(0xffffff, 2.15);
+  // Key sun — softer, slightly warm
+  const sun = new THREE.DirectionalLight(0xfff4e0, 1.45);
   sun.position.set(-9, 16, 8);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
@@ -282,11 +284,22 @@ function setupLights() {
   sun.shadow.camera.bottom = -22;
   scene.add(sun);
 
-  const bayLight = new THREE.PointLight(0x5fd6ff, 20, 12, 2);
+  // Cool teal rim light from behind — separates objects from background
+  const rim = new THREE.DirectionalLight(0x44e0c8, 0.85);
+  rim.position.set(7, 5, -12);
+  scene.add(rim);
+
+  // Loading-bay overhead floodlight (cyan)
+  const bayLight = new THREE.PointLight(0x5fd6ff, 22, 14, 2);
   bayLight.position.set(-4.4, 5.1, -1.4);
   scene.add(bayLight);
 
-  dynamic.alarmLight = new THREE.PointLight(0xff5a52, 0, 15, 2);
+  // Subtle warm ground fill to lift shadows on the asphalt
+  const groundFill = new THREE.HemisphereLight(0x223036, 0x000000, 0.35);
+  groundFill.position.set(0, -1, 0);
+  scene.add(groundFill);
+
+  dynamic.alarmLight = new THREE.PointLight(0xff5a52, 0, 16, 2);
   dynamic.alarmLight.position.set(0.8, 4.2, -1.5);
   scene.add(dynamic.alarmLight);
 }
@@ -323,8 +336,8 @@ function buildEnvironment() {
 }
 
 function buildSilos() {
-  const siloMaterial = new THREE.MeshStandardMaterial({ color: 0xd8e1dc, roughness: 0.4, metalness: 0.42 });
-  const capMaterial = new THREE.MeshStandardMaterial({ color: 0x8fa09a, roughness: 0.36, metalness: 0.55 });
+  const siloMaterial = new THREE.MeshStandardMaterial({ color: 0x6e7d87, roughness: 0.42, metalness: 0.5 });
+  const capMaterial = new THREE.MeshStandardMaterial({ color: 0x4a5860, roughness: 0.38, metalness: 0.62 });
 
   [-8.6, -6.4].forEach((x, index) => {
     const silo = new THREE.Group();
@@ -370,8 +383,8 @@ function buildTruckBay() {
   }
 
   const truck = new THREE.Group();
-  truck.add(box([3.3, 1.3, 1.25], [0, 0.82, 0], new THREE.MeshStandardMaterial({ color: 0xf2f5ef, roughness: 0.55, metalness: 0.12 })));
-  truck.add(box([1.1, 1.18, 1.18], [2.2, 0.74, 0], new THREE.MeshStandardMaterial({ color: 0x43a6c6, roughness: 0.5, metalness: 0.14 })));
+  truck.add(box([3.3, 1.3, 1.25], [0, 0.82, 0], new THREE.MeshStandardMaterial({ color: 0x3a4f5e, roughness: 0.6, metalness: 0.18 })));
+  truck.add(box([1.1, 1.18, 1.18], [2.2, 0.74, 0], new THREE.MeshStandardMaterial({ color: 0x2c7a93, roughness: 0.45, metalness: 0.22 })));
   for (const x of [-1.1, 1.0, 2.35]) {
     for (const z of [-0.68, 0.68]) {
       const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.22, 24), new THREE.MeshStandardMaterial({ color: 0x111817, roughness: 0.72 }));
@@ -385,7 +398,7 @@ function buildTruckBay() {
   truck.rotation.y = -0.06;
   world.add(truck);
 
-  const bag = box([0.7, 0.82, 0.42], [-4.9, 3.9, -0.3], new THREE.MeshStandardMaterial({ color: 0xe9ece5, roughness: 0.75 }));
+  const bag = box([0.7, 0.82, 0.42], [-4.9, 3.9, -0.3], new THREE.MeshStandardMaterial({ color: 0x8a8676, roughness: 0.85 }));
   bag.rotation.z = 0.2;
   dynamic.rupturedBag = bag;
   world.add(bag);

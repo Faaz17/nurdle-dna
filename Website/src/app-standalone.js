@@ -215,13 +215,13 @@ const world = new THREE.Group();
 scene.add(world);
 
 const materials = {
-  concrete: new THREE.MeshStandardMaterial({ color: 0x2c3a3e, roughness: 0.92, metalness: 0.04 }),
-  darkConcrete: new THREE.MeshStandardMaterial({ color: 0x18221f, roughness: 0.95 }),
-  paintedSteel: new THREE.MeshStandardMaterial({ color: 0x6c7a82, roughness: 0.48, metalness: 0.42 }),
-  steel: new THREE.MeshStandardMaterial({ color: 0x7c8d96, roughness: 0.38, metalness: 0.7 }),
-  yellow: new THREE.MeshStandardMaterial({ color: 0xffbf4b, roughness: 0.5, metalness: 0.18 }),
-  red: new THREE.MeshStandardMaterial({ color: 0xe54843, roughness: 0.45, metalness: 0.18, emissive: 0x330000 }),
-  green: new THREE.MeshStandardMaterial({ color: 0x43e08a, roughness: 0.45, metalness: 0.16, emissive: 0x043d1b }),
+  concrete: new THREE.MeshStandardMaterial({ color: 0xb6bec3, roughness: 0.88, metalness: 0.02 }),
+  darkConcrete: new THREE.MeshStandardMaterial({ color: 0x1a2025, roughness: 0.95 }),
+  paintedSteel: new THREE.MeshStandardMaterial({ color: 0x394048, roughness: 0.5, metalness: 0.45 }),
+  steel: new THREE.MeshStandardMaterial({ color: 0x4a5560, roughness: 0.42, metalness: 0.72 }),
+  yellow: new THREE.MeshStandardMaterial({ color: 0xe6a83a, roughness: 0.55, metalness: 0.22 }),
+  red: new THREE.MeshStandardMaterial({ color: 0xc8342f, roughness: 0.4, metalness: 0.22, emissive: 0x4a0808 }),
+  green: new THREE.MeshStandardMaterial({ color: 0x2bb874, roughness: 0.4, metalness: 0.2, emissive: 0x0a4828 }),
   glass: new THREE.MeshPhysicalMaterial({
     color: 0xbdefff,
     roughness: 0.02,
@@ -269,12 +269,12 @@ setScene(0, true);
 animate();
 
 function setupLights() {
-  // Cooler, dimmer ambient — gives objects room to read against the dark sky
-  const hemi = new THREE.HemisphereLight(0xb8d4dc, 0x0d1b1f, 0.92);
+  // Soft cool ambient — keeps dark machinery from going pitch black
+  const hemi = new THREE.HemisphereLight(0xc8d8de, 0x1a2025, 0.7);
   scene.add(hemi);
 
-  // Key sun — softer, slightly warm
-  const sun = new THREE.DirectionalLight(0xfff4e0, 1.45);
+  // Key sun — toned down so light floor doesn't blow out
+  const sun = new THREE.DirectionalLight(0xfff5e6, 1.05);
   sun.position.set(-9, 16, 8);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
@@ -284,20 +284,15 @@ function setupLights() {
   sun.shadow.camera.bottom = -22;
   scene.add(sun);
 
-  // Cool teal rim light from behind — separates objects from background
-  const rim = new THREE.DirectionalLight(0x44e0c8, 0.85);
+  // Teal rim light from behind — separates dark machinery silhouettes
+  const rim = new THREE.DirectionalLight(0x44e0c8, 0.55);
   rim.position.set(7, 5, -12);
   scene.add(rim);
 
-  // Loading-bay overhead floodlight (cyan)
-  const bayLight = new THREE.PointLight(0x5fd6ff, 22, 14, 2);
+  // Loading-bay overhead floodlight (cyan) — reduced so it doesn't overexpose
+  const bayLight = new THREE.PointLight(0x5fd6ff, 11, 12, 2);
   bayLight.position.set(-4.4, 5.1, -1.4);
   scene.add(bayLight);
-
-  // Subtle warm ground fill to lift shadows on the asphalt
-  const groundFill = new THREE.HemisphereLight(0x223036, 0x000000, 0.35);
-  groundFill.position.set(0, -1, 0);
-  scene.add(groundFill);
 
   dynamic.alarmLight = new THREE.PointLight(0xff5a52, 0, 16, 2);
   dynamic.alarmLight.position.set(0.8, 4.2, -1.5);
@@ -310,9 +305,9 @@ function buildEnvironment() {
   pad.receiveShadow = true;
   world.add(pad);
 
-  const grid = new THREE.GridHelper(28, 28, 0x6b7a74, 0x38433f);
+  const grid = new THREE.GridHelper(28, 28, 0x4a5560, 0x6c7882);
   grid.position.y = 0.01;
-  grid.material.opacity = 0.22;
+  grid.material.opacity = 0.45;
   grid.material.transparent = true;
   world.add(grid);
 
@@ -336,8 +331,8 @@ function buildEnvironment() {
 }
 
 function buildSilos() {
-  const siloMaterial = new THREE.MeshStandardMaterial({ color: 0x6e7d87, roughness: 0.42, metalness: 0.5 });
-  const capMaterial = new THREE.MeshStandardMaterial({ color: 0x4a5860, roughness: 0.38, metalness: 0.62 });
+  const siloMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3845, roughness: 0.45, metalness: 0.55 });
+  const capMaterial = new THREE.MeshStandardMaterial({ color: 0x1c2530, roughness: 0.4, metalness: 0.68 });
 
   [-8.6, -6.4].forEach((x, index) => {
     const silo = new THREE.Group();
@@ -383,8 +378,8 @@ function buildTruckBay() {
   }
 
   const truck = new THREE.Group();
-  truck.add(box([3.3, 1.3, 1.25], [0, 0.82, 0], new THREE.MeshStandardMaterial({ color: 0x3a4f5e, roughness: 0.6, metalness: 0.18 })));
-  truck.add(box([1.1, 1.18, 1.18], [2.2, 0.74, 0], new THREE.MeshStandardMaterial({ color: 0x2c7a93, roughness: 0.45, metalness: 0.22 })));
+  truck.add(box([3.3, 1.3, 1.25], [0, 0.82, 0], new THREE.MeshStandardMaterial({ color: 0x1f2a35, roughness: 0.62, metalness: 0.22 })));
+  truck.add(box([1.1, 1.18, 1.18], [2.2, 0.74, 0], new THREE.MeshStandardMaterial({ color: 0x1a4858, roughness: 0.48, metalness: 0.28 })));
   for (const x of [-1.1, 1.0, 2.35]) {
     for (const z of [-0.68, 0.68]) {
       const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.22, 24), new THREE.MeshStandardMaterial({ color: 0x111817, roughness: 0.72 }));
@@ -678,12 +673,12 @@ function installDeviceGeometry(geometry) {
   geometry.translate(-center.x, -center.y, -center.z);
 
   const material = new THREE.MeshStandardMaterial({
-    color: 0x43e08a,
-    roughness: 0.28,
-    metalness: 0.48,
-    emissive: 0x052817,
+    color: 0x2bb874,
+    roughness: 0.32,
+    metalness: 0.52,
+    emissive: 0x0a4828,
     transparent: true,
-    opacity: 0.92,
+    opacity: 0.97,
   });
 
   const mesh = new THREE.Mesh(geometry, material);

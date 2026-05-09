@@ -18,6 +18,7 @@
         <a href="#impact">Impact</a>
         <a href="#evidence">Evidence</a>
         <a href="#demo">Demo</a>
+        <a href="#team">Team</a>
       </nav>
     </header>
 
@@ -95,22 +96,22 @@
         <article>
           <span>01</span>
           <h3>Detect leakage</h3>
-          <p>Transparent flow, AI camera boxes, and water-quality signals identify pellet leakage at the industrial source.</p>
+          <p>An NVIDIA Jetson Nano runs YOLOv8 AI vision on the optical flow cell while an MQ-135 gas sensor and LDR turbidity probe confirm the incident at the industrial source.</p>
         </article>
         <article>
           <span>02</span>
           <h3>Stop escape</h3>
-          <p>The valve closes automatically and diverts contaminated flow into a protected capture path.</p>
+          <p>An Arduino Uno FSM triggers the MG996R servo pinch valve within one second, diverting contaminated flow into a protected capture path.</p>
         </article>
         <article>
           <span>03</span>
           <h3>Capture evidence</h3>
-          <p>White pellets collect inside a removable mesh cartridge while a load cell records captured mass.</p>
+          <p>Nurdles collect inside a removable mesh cartridge while an HX711 load cell records captured mass in grams — physical, auditable evidence.</p>
         </article>
         <article>
           <span>04</span>
           <h3>Report action</h3>
-          <p>Every incident is logged with Bay ID, timestamp, proof image, valve state, and maintenance action.</p>
+          <p>Every incident is time-stamped and uploaded to Firebase with Bay ID, DNA source, proof image, valve state, and maintenance action.</p>
         </article>
       </section>
 
@@ -171,7 +172,34 @@
       </section>
 
       <section id="demo" class="demo-section">
-        <h2>Show the real moment: leak, alarm, valve closure, evidence, report.</h2>
+        <p class="section-kicker">See it in action</p>
+        <h2>Watch the full contamination response cycle.</h2>
+        <p>The interactive digital twin walks through all five stages — site commissioning, safe monitoring, spill detection, valve lockdown, and audit report — driven by the same logic as the real device.</p>
+        <a class="final-link" href="./digital-twin.html">Open digital twin →</a>
+      </section>
+
+      <section id="team" class="team-section">
+        <p class="section-kicker">The people behind it</p>
+        <h2>Arc Tech — Team 2</h2>
+        <div class="team-grid">
+          <div class="team-card">
+            <strong>Muhammad Haaziq</strong>
+            <span>System Architect &amp; 3D Model</span>
+          </div>
+          <div class="team-card">
+            <strong>Faaz Ali Sayyed</strong>
+            <span>Circuit Design &amp; State Machine</span>
+          </div>
+          <div class="team-card">
+            <strong>Daniel Koshy</strong>
+            <span>Circuit Simulation &amp; Finance</span>
+          </div>
+          <div class="team-card">
+            <strong>Mohammed Abdul Rahman</strong>
+            <span>Marketing &amp; Meeting Management</span>
+          </div>
+        </div>
+        <p class="team-affil">ECTE 250 &middot; University of Wollongong in Dubai</p>
       </section>
     </main>
 

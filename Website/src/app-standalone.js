@@ -10,15 +10,17 @@ const scenes = [
     dashboard: {
       state: 'Commissioned / Ready',
       pellet: '0',
-      voc: 'Safe',
+      gas_ppm: '--',
       valve: 'Open',
       mass: '0 g',
-      confidence: '--',
+      density_index: '--',
       turbidity: 'Clear',
-      timestamp: '--:--:--',
       bay: 'Loading Bay 03',
       proof: 'Standby',
       report: 'Template ready',
+      fsm_state: 'S0',
+      dna_source: '--',
+      device_id: 'NURDLE-001',
     },
     visual: { spill: 0, pipePellets: 0, cartridge: 0, valve: 0, alarm: 0, vapor: 0, ai: 0, report: 0 },
   },
@@ -33,15 +35,17 @@ const scenes = [
     dashboard: {
       state: 'Green / Monitoring',
       pellet: '0',
-      voc: 'Safe',
+      gas_ppm: '24 ppm',
       valve: 'Open',
       mass: '0 g',
-      confidence: '--',
+      density_index: '12',
       turbidity: 'Clear',
-      timestamp: '14:31:56',
       bay: 'Loading Bay 03',
       proof: 'Standby',
       report: 'Standby',
+      fsm_state: 'S1',
+      dna_source: '--',
+      device_id: 'NURDLE-001',
     },
     visual: { spill: 0, pipePellets: 0, cartridge: 0, valve: 0, alarm: 0, vapor: 0, ai: 0.18, report: 0 },
   },
@@ -56,15 +60,17 @@ const scenes = [
     dashboard: {
       state: 'Warning / Detecting',
       pellet: '126',
-      voc: 'Warning',
+      gas_ppm: '118 ppm',
       valve: 'Open',
       mass: '0 g',
-      confidence: '94%',
+      density_index: '58',
       turbidity: 'High',
-      timestamp: '14:32:07',
       bay: 'Loading Bay 03',
       proof: 'Capturing',
       report: 'Pending',
+      fsm_state: 'S2',
+      dna_source: 'Analysing',
+      device_id: 'NURDLE-001',
     },
     visual: { spill: 1, pipePellets: 0.82, cartridge: 0.08, valve: 0, alarm: 0.45, vapor: 0.85, ai: 1, report: 0 },
   },
@@ -79,15 +85,17 @@ const scenes = [
     dashboard: {
       state: 'Red / Containment',
       pellet: '126',
-      voc: 'Warning',
+      gas_ppm: '120 ppm',
       valve: 'Closed',
       mass: '18.6 g',
-      confidence: '94%',
+      density_index: '72',
       turbidity: 'High',
-      timestamp: '14:32:08',
       bay: 'Loading Bay 03',
       proof: 'Saved',
       report: 'Generated',
+      fsm_state: 'S3',
+      dna_source: 'SOURCE-B',
+      device_id: 'NURDLE-001',
     },
     visual: { spill: 0.62, pipePellets: 0.45, cartridge: 1, valve: 1, alarm: 1, vapor: 0.58, ai: 1, report: 0.35 },
   },
@@ -102,15 +110,17 @@ const scenes = [
     dashboard: {
       state: 'Green / Reported',
       pellet: '126',
-      voc: 'Warning logged',
+      gas_ppm: '120 ppm',
       valve: 'Closed',
       mass: '18.6 g',
-      confidence: '94%',
+      density_index: '72',
       turbidity: 'High logged',
-      timestamp: '14:32:08',
       bay: 'Loading Bay 03',
       proof: 'Saved',
       report: 'Generated',
+      fsm_state: 'S3',
+      dna_source: 'SOURCE-B',
+      device_id: 'NURDLE-001',
     },
     visual: { spill: 0.2, pipePellets: 0.12, cartridge: 1, valve: 1, alarm: 0.2, vapor: 0.18, ai: 0.72, report: 1 },
   },
@@ -132,15 +142,18 @@ const dom = {
   metrics: {
     state: document.querySelector('#stateValue'),
     pellet: document.querySelector('#pelletValue'),
-    voc: document.querySelector('#vocValue'),
+    gas_ppm: document.querySelector('#vocValue'),
     valve: document.querySelector('#valveValue'),
     mass: document.querySelector('#massValue'),
-    confidence: document.querySelector('#confidenceValue'),
+    density_index: document.querySelector('#confidenceValue'),
     turbidity: document.querySelector('#turbidityValue'),
     timestamp: document.querySelector('#timestampValue'),
     bay: document.querySelector('#bayValue'),
     proof: document.querySelector('#proofValue'),
     report: document.querySelector('#reportValue'),
+    fsm_state: document.querySelector('#fsmStateValue'),
+    dna_source: document.querySelector('#dnaSourceValue'),
+    device_id: document.querySelector('#deviceIdValue'),
   },
 };
 
@@ -867,6 +880,20 @@ function updateHudProgress() {
   dom.progressBar.style.width = `${progress * 100}%`;
 }
 
+function startTimestampClock(active) {
+  clearInterval(window._tsClock);
+  if (!active) { dom.metrics.timestamp.textContent = '--:--:--'; return; }
+  function tick() {
+    const d = new Date();
+    dom.metrics.timestamp.textContent =
+      String(d.getHours()).padStart(2, '0') + ':' +
+      String(d.getMinutes()).padStart(2, '0') + ':' +
+      String(d.getSeconds()).padStart(2, '0');
+  }
+  tick();
+  window._tsClock = setInterval(tick, 1000);
+}
+
 function setScene(index, moveCamera = false) {
   activeScene = index;
   sceneTimer = 0;
@@ -876,15 +903,18 @@ function setScene(index, moveCamera = false) {
   dom.sceneSummary.textContent = profile.summary;
   dom.metrics.state.textContent = profile.dashboard.state;
   dom.metrics.pellet.textContent = profile.dashboard.pellet;
-  dom.metrics.voc.textContent = profile.dashboard.voc;
+  dom.metrics.gas_ppm.textContent = profile.dashboard.gas_ppm;
   dom.metrics.valve.textContent = profile.dashboard.valve;
   dom.metrics.mass.textContent = profile.dashboard.mass;
-  dom.metrics.confidence.textContent = profile.dashboard.confidence;
+  dom.metrics.density_index.textContent = profile.dashboard.density_index;
   dom.metrics.turbidity.textContent = profile.dashboard.turbidity;
-  dom.metrics.timestamp.textContent = profile.dashboard.timestamp;
   dom.metrics.bay.textContent = profile.dashboard.bay;
   dom.metrics.proof.textContent = profile.dashboard.proof;
   dom.metrics.report.textContent = profile.dashboard.report;
+  dom.metrics.fsm_state.textContent = profile.dashboard.fsm_state;
+  dom.metrics.dna_source.textContent = profile.dashboard.dna_source;
+  dom.metrics.device_id.textContent = profile.dashboard.device_id;
+  startTimestampClock(activeScene > 0);
 
   dom.statusCard.classList.remove('tone-green', 'tone-amber', 'tone-red', 'tone-cyan');
   dom.statusCard.classList.add(`tone-${profile.tone}`);
@@ -1038,3 +1068,37 @@ function roundRect(ctx, x, y, width, height, radius) {
   ctx.quadraticCurveTo(x, y, x + radius, y);
   ctx.closePath();
 }
+
+// Firebase live data — overwrites demo scene values when device is online.
+// Replace all REPLACE_ME values with your Firebase project credentials.
+(function initFirebase() {
+  const firebaseConfig = {
+    apiKey: 'REPLACE_ME',
+    authDomain: 'REPLACE_ME.firebaseapp.com',
+    databaseURL: 'https://REPLACE_ME-default-rtdb.firebaseio.com',
+    projectId: 'REPLACE_ME',
+  };
+
+  if (typeof firebase === 'undefined' || firebaseConfig.apiKey === 'REPLACE_ME') return;
+
+  try {
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    db.ref('devices/NURDLE-001').on('value', function (snapshot) {
+      const data = snapshot.val();
+      if (!data) return;
+      if (dom.metrics.density_index) dom.metrics.density_index.textContent = data.density_index != null ? String(data.density_index) : '--';
+      if (dom.metrics.gas_ppm) dom.metrics.gas_ppm.textContent = data.gas_ppm != null ? data.gas_ppm + ' ppm' : '--';
+      if (dom.metrics.fsm_state) dom.metrics.fsm_state.textContent = data.fsm_state || '--';
+      if (dom.metrics.dna_source) dom.metrics.dna_source.textContent = data.dna_source || '--';
+      if (dom.metrics.valve) dom.metrics.valve.textContent = data.valve || '--';
+      if (dom.metrics.mass) dom.metrics.mass.textContent = data.grams_captured != null ? data.grams_captured + ' g' : '--';
+      if (dom.metrics.timestamp) {
+        clearInterval(window._tsClock);
+        dom.metrics.timestamp.textContent = data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : '--:--:--';
+      }
+    });
+  } catch (e) {
+    console.warn('NurdleDNA Firebase init failed:', e.message);
+  }
+}());

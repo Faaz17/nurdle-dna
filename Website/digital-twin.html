@@ -53,12 +53,15 @@
           </div>
           <div class="metrics-grid">
             <article class="metric"><span>Pellet count</span><strong id="pelletValue">0</strong></article>
-            <article class="metric"><span>VOC level</span><strong id="vocValue">Safe</strong></article>
+            <article class="metric"><span>Gas (ppm)</span><strong id="vocValue">--</strong></article>
             <article class="metric"><span>Valve</span><strong id="valveValue">Open</strong></article>
             <article class="metric"><span>Cartridge mass</span><strong id="massValue">0 g</strong></article>
-            <article class="metric"><span>AI confidence</span><strong id="confidenceValue">--</strong></article>
+            <article class="metric"><span>Density Index</span><strong id="confidenceValue">--</strong></article>
             <article class="metric"><span>Turbidity</span><strong id="turbidityValue">Clear</strong></article>
           </div>
+          <div class="event-row"><span>FSM State</span><strong id="fsmStateValue">S0</strong></div>
+          <div class="event-row"><span>DNA Source</span><strong id="dnaSourceValue">--</strong></div>
+          <div class="event-row"><span>Device ID</span><strong id="deviceIdValue">NURDLE-001</strong></div>
           <div class="event-row"><span>Bay ID</span><strong id="bayValue">Loading Bay 03</strong></div>
           <div class="event-row"><span>Proof image</span><strong id="proofValue">Standby</strong></div>
           <div class="event-row"><span>Report</span><strong id="reportValue">Standby</strong></div>
@@ -89,5 +92,8 @@
     <script src="./assets/vendor/OrbitControls.global.js"></script>
     <script src="./assets/models/nurdle-dna-device-base64.js"></script>
     <script src="./src/app-standalone.js"></script>
+    <!-- Firebase compat SDK — no build step required -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   </body>
 </html>

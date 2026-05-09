@@ -10,6 +10,14 @@
     <main id="app">
       <canvas id="world" aria-label="NurdleDNA live 3D industrial digital twin"></canvas>
 
+      <div id="pausedOverlay" class="paused-overlay" hidden aria-live="polite">
+        <div class="paused-card">
+          <span class="paused-dot" aria-hidden="true"></span>
+          <strong>PAUSED</strong>
+          <small>Press Play to resume scenario auto-cycle</small>
+        </div>
+      </div>
+
       <section class="hud hud-left" aria-label="Scenario controls">
         <header class="title-block">
           <p class="eyebrow">NurdleDNA Digital Twin</p>
@@ -25,6 +33,11 @@
           <h2 id="sceneTitle">Industrial area setup</h2>
           <p id="sceneSummary">Industrial assets, drainage route, and NurdleDNA inline protection are visible.</p>
           <div class="scene-grid" id="sceneButtons" aria-label="Scenario scenes"></div>
+          <div class="trigger-row" aria-label="Manual scenario triggers">
+            <button class="trigger trigger-spill" type="button" data-jump="2">Trigger Spill</button>
+            <button class="trigger trigger-gas"   type="button" data-jump="3">Force Lockdown</button>
+            <button class="trigger trigger-reset" type="button" data-jump="0">Reset to SITE</button>
+          </div>
         </div>
 
         <div class="control-strip panel" aria-label="Playback controls">
@@ -33,6 +46,7 @@
           <label class="speed-control">
             <span>Speed</span>
             <input id="speedRange" type="range" min="0.6" max="1.8" step="0.1" value="1">
+            <span class="speed-value" id="speedValue">1.0&times;</span>
           </label>
         </div>
       </section>

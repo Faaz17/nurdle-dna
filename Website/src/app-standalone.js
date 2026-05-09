@@ -604,9 +604,14 @@ function buildControls() {
     dom.sceneButtons.append(button);
   });
 
+  const pausedOverlay = document.querySelector('#pausedOverlay');
+  const speedValue = document.querySelector('#speedValue');
+
   dom.playToggle.addEventListener('click', () => {
     playing = !playing;
     dom.playToggle.textContent = playing ? 'Pause' : 'Play';
+    dom.playToggle.classList.toggle('is-paused', !playing);
+    if (pausedOverlay) pausedOverlay.hidden = playing;
   });
 
   dom.resetScene.addEventListener('click', () => {
@@ -616,6 +621,14 @@ function buildControls() {
 
   dom.speedRange.addEventListener('input', () => {
     speed = Number(dom.speedRange.value);
+    if (speedValue) speedValue.textContent = speed.toFixed(1) + '×';
+  });
+
+  document.querySelectorAll('.trigger').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const i = Number(btn.dataset.jump);
+      if (!Number.isNaN(i) && i >= 0 && i < scenes.length) setScene(i, true);
+    });
   });
 
   window.addEventListener('resize', onResize);

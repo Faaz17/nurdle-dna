@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NurdleDNA Industrial Digital Twin Standalone</title>
+    <link rel="stylesheet" href="./src/styles.css">
+  </head>
+  <body>
+    <main id="app">
+      <canvas id="world" aria-label="NurdleDNA live 3D industrial digital twin"></canvas>
+
+      <section class="hud hud-left" aria-label="Scenario controls">
+        <header class="title-block">
+          <p class="eyebrow">NurdleDNA Digital Twin</p>
+          <h1>A Live 3D Industrial Environmental Firewall</h1>
+          <p class="tagline">From invisible industrial leakage to visible evidence, instant action, and measurable environmental protection.</p>
+        </header>
+
+        <div class="scene-panel panel">
+          <div class="panel-head">
+            <span>Scenario</span>
+            <span id="sceneCode" class="code-pill">SITE</span>
+          </div>
+          <h2 id="sceneTitle">Industrial area setup</h2>
+          <p id="sceneSummary">Industrial assets, drainage route, and NurdleDNA inline protection are visible.</p>
+          <div class="scene-grid" id="sceneButtons" aria-label="Scenario scenes"></div>
+        </div>
+
+        <div class="control-strip panel" aria-label="Playback controls">
+          <button id="playToggle" type="button" class="command">Pause</button>
+          <button id="resetScene" type="button" class="command secondary">Reset</button>
+          <label class="speed-control">
+            <span>Speed</span>
+            <input id="speedRange" type="range" min="0.6" max="1.8" step="0.1" value="1">
+          </label>
+        </div>
+      </section>
+
+      <section class="hud hud-right" aria-label="Live compliance dashboard">
+        <div class="status-card panel" id="statusCard">
+          <div>
+            <span class="label">System state</span>
+            <strong id="stateValue">Green / Monitoring</strong>
+          </div>
+          <span id="stateDot" class="state-dot"></span>
+        </div>
+
+        <div class="dashboard panel">
+          <div class="panel-head">
+            <span>Live Compliance Dashboard</span>
+            <span id="timestampValue" class="code-pill">--:--:--</span>
+          </div>
+          <div class="metrics-grid">
+            <article class="metric">
+              <span>Pellet count</span>
+              <strong id="pelletValue">0</strong>
+            </article>
+            <article class="metric">
+              <span>VOC level</span>
+              <strong id="vocValue">Safe</strong>
+            </article>
+            <article class="metric">
+              <span>Valve</span>
+              <strong id="valveValue">Open</strong>
+            </article>
+            <article class="metric">
+              <span>Cartridge mass</span>
+              <strong id="massValue">0 g</strong>
+            </article>
+            <article class="metric">
+              <span>AI confidence</span>
+              <strong id="confidenceValue">--</strong>
+            </article>
+            <article class="metric">
+              <span>Turbidity</span>
+              <strong id="turbidityValue">Clear</strong>
+            </article>
+          </div>
+          <div class="event-row">
+            <span>Bay ID</span>
+            <strong id="bayValue">Loading Bay 03</strong>
+          </div>
+          <div class="event-row">
+            <span>Proof image</span>
+            <strong id="proofValue">Standby</strong>
+          </div>
+          <div class="event-row">
+            <span>Report</span>
+            <strong id="reportValue">Standby</strong>
+          </div>
+        </div>
+
+        <div class="report panel" id="reportPanel">
+          <div class="panel-head">
+            <span>Incident Report</span>
+            <span class="code-pill">AUDIT READY</span>
+          </div>
+          <dl>
+            <div><dt>Location</dt><dd id="reportLocation">Industrial loading bay</dd></div>
+            <div><dt>Event type</dt><dd id="reportType">Pellet leakage + VOC warning</dd></div>
+            <div><dt>Captured mass</dt><dd id="reportMass">18.6 g</dd></div>
+            <div><dt>Valve response</dt><dd id="reportResponse">&lt; 1 second</dd></div>
+            <div><dt>Proof image</dt><dd id="reportProof">Saved</dd></div>
+            <div><dt>Maintenance</dt><dd id="reportMaintenance">Cartridge removal required</dd></div>
+          </dl>
+          <div class="proof-frame" aria-label="Saved proof image preview">
+            <span>AI proof frame saved</span>
+            <b>126 pellets detected</b>
+          </div>
+        </div>
+      </section>
+
+      <div class="progress-shell" aria-hidden="true">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+    </main>
+
+    <script src="./assets/vendor/three.global.min.js"></script>
+    <script src="./assets/vendor/STLLoader.global.js"></script>
+    <script src="./assets/vendor/OrbitControls.global.js"></script>
+    <script src="./assets/models/nurdle-dna-device-base64.js"></script>
+    <script src="./src/app-standalone.js"></script>
+  </body>
+</html>

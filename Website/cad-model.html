@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NurdleDNA CAD | Device Engineering View</title>
+    <link rel="stylesheet" href="./src/site.css">
+  </head>
+  <body class="cad-page">
+    <header class="site-header" aria-label="CAD page navigation">
+      <a class="brand" href="./index.html" aria-label="NurdleDNA home">
+        <span>NurdleDNA</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="./index.html">Home</a>
+        <a href="./index.html#how">How it works</a>
+        <a href="./index.html#impact">Impact</a>
+        <a href="./digital-twin.html">Live demo</a>
+      </nav>
+    </header>
+
+    <main class="cad-page-main">
+      <section id="cad-model" class="cad-section cad-page-section" aria-label="NurdleDNA CAD model and device description">
+        <div class="cad-viewer">
+          <canvas id="cadModelCanvas" aria-label="Interactive CAD view of the uploaded NurdleDNA GLB prototype"></canvas>
+          <div class="cad-viewer-tag">Tinkercad source CAD design</div>
+        </div>
+        <div class="cad-copy">
+          <p class="section-kicker">Device engineering view</p>
+          <h1>NurdleDNA</h1>
+          <p>
+            This presents the Nurdle DNA prototype design. The model is shown as a clean
+            engineering view for reviewing the device body, sensing layout, containment pathway,
+            and evidence-capture method.
+          </p>
+          <dl class="cad-spec-list">
+            <div><dt>Primary function</dt><dd>Inline prototype housing for monitoring industrial drains and pellet-transfer zones before leakage reaches stormwater or coastal discharge.</dd></div>
+            <div><dt>Detection architecture</dt><dd>AI vision identifies nurdles while VOC, turbidity, and flow readings verify the incident and classify its severity.</dd></div>
+            <div><dt>Response architecture</dt><dd>Confirmed leakage closes the valve and diverts contaminated flow into a removable evidence cartridge.</dd></div>
+            <div><dt>Evidence architecture</dt><dd>Captured pellets are retained for mass logging, proof imaging, cartridge removal, and auditable compliance reporting.</dd></div>
+            <div><dt>Operational method</dt><dd>The device works as a smart environmental system: detect, contain, preserve evidence, and generate a traceable incident record.</dd></div>
+          </dl>
+          <div class="cad-actions">
+            <a class="cad-source-link" href="https://www.tinkercad.com/things/2t4K6KbkoLA-nurdle-dna-3d-cad-design/edit?returnTo=https%3A%2F%2Fwww.tinkercad.com%2Fdashboard" target="_blank" rel="noreferrer">Open Tinkercad design</a>
+            <a class="cad-back-link" href="./index.html">Back to website</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./assets/vendor/three.global.min.js"></script>
+    <script src="./assets/vendor/OrbitControls.global.js"></script>
+    <script src="./assets/models/nurdle-dna-colored-base64.js"></script>
+    <script src="./assets/models/nurdle-dna-cad-design-1-base64.js"></script>
+    <script src="./src/cad-page.js"></script>
+  </body>
+</html>

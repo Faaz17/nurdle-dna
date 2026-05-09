@@ -35,9 +35,6 @@
   window.addEventListener('load', () => {
     document.querySelector('.ag-nav')?.classList.add('is-visible');
     document.querySelector('.ag-hero')?.classList.add('is-visible');
-    setTimeout(() => {
-      document.querySelector('.ag-webgl')?.classList.add('is-visible');
-    }, 400);
   });
 
   // ──────────────────────────────────────────────
@@ -168,21 +165,30 @@
   sections.forEach((s) => activeObserver.observe(s));
 
   // ──────────────────────────────────────────────
-  // 8. Cursor-driven subtle parallax on hero copy
+  // 8. Cursor-driven parallax on hero copy + chip rotation
   // ──────────────────────────────────────────────
 
   const heroCopy = document.querySelector('.ag-hero-edito');
+  const chip = document.querySelector('.ag-chip');
   let tx = 0, ty = 0, cx = 0, cy = 0;
+
   document.addEventListener('mousemove', (e) => {
-    tx = (e.clientX / window.innerWidth - 0.5);
-    ty = (e.clientY / window.innerHeight - 0.5);
+    tx = (e.clientX / window.innerWidth - 0.5) * 2;
+    ty = (e.clientY / window.innerHeight - 0.5) * 2;
   }, { passive: true });
 
   function tickHero() {
-    cx += (tx - cx) * 0.05;
-    cy += (ty - cy) * 0.05;
-    if (heroCopy && window.scrollY < window.innerHeight) {
-      heroCopy.style.transform = 'translate(' + cx * 8 + 'px,' + cy * 6 + 'px)';
+    cx += (tx - cx) * 0.06;
+    cy += (ty - cy) * 0.06;
+    if (window.scrollY < window.innerHeight) {
+      if (heroCopy) {
+        heroCopy.style.transform =
+          'translate(' + (cx * 5).toFixed(2) + 'px,' + (cy * 4).toFixed(2) + 'px)';
+      }
+      if (chip) {
+        chip.style.setProperty('--mx', cx.toFixed(3));
+        chip.style.setProperty('--my', cy.toFixed(3));
+      }
     }
     requestAnimationFrame(tickHero);
   }

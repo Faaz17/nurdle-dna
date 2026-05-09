@@ -9,11 +9,6 @@
   </head>
   <body>
 
-    <!-- WEBGL background canvas (driven by site.js Three.js scene) -->
-    <div class="ag-webgl" aria-hidden="true">
-      <canvas id="futureWorld"></canvas>
-    </div>
-
     <!-- TOP NAV -->
     <header class="ag-nav" aria-label="Site navigation">
       <div class="ag-nav-container">
@@ -48,10 +43,10 @@
         <div class="ag-container">
           <div class="ag-hero-edito">
             <div class="ag-hero-title">
-              <h1>Still flushing<br>nurdles?</h1>
+              <h1>Cleaner industry,<br>cleaner future</h1>
             </div>
             <div class="ag-hero-paragraph">
-              <p>NurdleDNA is leading the shift to AI-powered industrial drain monitoring, to keep microplastics out of the watershed.</p>
+              <p>NurdleDNA is leading the shift to AI-powered industrial drain monitoring &mdash; to keep nurdles out of stormwater, soil, and the sea.</p>
             </div>
             <div class="ag-hero-actions">
               <a href="./live-demo.html" class="ag-button primary">
@@ -64,6 +59,32 @@
               </a>
             </div>
           </div>
+
+          <!-- Hero chip illustration (CSS/SVG, not WebGL) -->
+          <div class="ag-hero-visual" aria-hidden="true">
+            <div class="ag-chip-wrapper">
+              <div class="ag-chip">
+                <div class="ag-chip-substrate">
+                  <div class="ag-chip-grid"></div>
+                  <div class="ag-chip-traces"></div>
+                  <div class="ag-chip-pads top"></div>
+                  <div class="ag-chip-pads bottom"></div>
+                  <div class="ag-chip-pads left"></div>
+                  <div class="ag-chip-pads right"></div>
+                  <div class="ag-chip-die">
+                    <div class="ag-chip-die-inner">
+                      <div class="ag-chip-die-core"></div>
+                      <span class="ag-chip-label">NRDL-001</span>
+                      <span class="ag-chip-sub">arc-tech v0.4.0</span>
+                    </div>
+                  </div>
+                  <div class="ag-chip-scan"></div>
+                </div>
+                <div class="ag-chip-edge"></div>
+              </div>
+            </div>
+          </div>
+
           <div class="ag-scroll-label-container">
             <div class="ag-scroll-label">
               <p class="text">
@@ -223,7 +244,7 @@
         </div>
         <div class="ag-container second-container">
           <div class="ag-quote" data-anim="fade-up">
-            <p><strong>Cleaner industry, cleaner future</strong></p>
+            <p><strong>Detect. Contain. Prove. Report.</strong></p>
           </div>
         </div>
       </section>
@@ -416,10 +437,10 @@
       <section class="ag-contact" id="contact">
         <div class="ag-container">
           <div class="ag-contact-title" data-anim="fade-up">
-            <h2>Cleaner industry,<br>cleaner future</h2>
+            <h2>Get on board<br>the clean drain</h2>
           </div>
           <div class="ag-contact-description" data-anim="fade-up">
-            <p>Practical Environmental Computing</p>
+            <p>Industrial Environmental Firewall &middot; ECTE 250 Team 2</p>
           </div>
           <div class="ag-contact-buttons" data-anim="fade-up">
             <a href="./live-demo.html" class="ag-card-button">
@@ -450,13 +471,6 @@
       </footer>
 
     </main>
-
-    <!-- WebGL background uses the original Three.js scene from site.js -->
-    <script src="./assets/vendor/three.global.min.js"></script>
-    <script src="./assets/vendor/STLLoader.global.js"></script>
-    <script src="./assets/vendor/OrbitControls.global.js"></script>
-    <script src="./assets/models/nurdle-dna-device-base64.js"></script>
-    <script src="./src/site.js" defer></script>
 
     <script src="./src/arago.js" defer></script>
   </body>

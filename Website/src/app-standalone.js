@@ -701,7 +701,7 @@ function updateVisualState(dt) {
 
 function updateWorld(dt, elapsed) {
   if (dynamic.deviceMesh) {
-    dynamic.deviceMesh.rotation.y += dt * 0.18;
+    dynamic.deviceMesh.rotation.y = visual.alarm * Math.sin(clock.elapsedTime * 1.2) * 0.06;
   }
 
   if (dynamic.rupturedBag) {

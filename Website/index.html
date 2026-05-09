@@ -149,10 +149,10 @@
           </article>
           <article class="hw-card hw-gas">
             <div class="hw-icon" aria-hidden="true">⚗</div>
-            <h3>MQ-135 Gas Sensor</h3>
+            <h3>MQ-135 / MQ-4 Gas Sensor</h3>
             <p class="hw-role">Headspace VOC monitoring</p>
-            <p>Mounted in the chamber headspace. Detects volatile organic compounds and ammonia leakage from the pellet stream. Critical threshold latches the FSM into S3.</p>
-            <ul class="hw-meta"><li>Analog → A1</li><li>Trip &gt; 200 ppm</li></ul>
+            <p>Mounted in the chamber headspace. Detects volatile organic compounds and ammonia leakage from the pellet stream. Critical threshold latches the FSM into S3 (ALRM).</p>
+            <ul class="hw-meta"><li>Analog → A1</li><li>Trip &gt; 200 ppm</li><li>MQ-135 or MQ-4</li></ul>
           </article>
           <article class="hw-card hw-ldr">
             <div class="hw-icon" aria-hidden="true">◈</div>
@@ -180,7 +180,21 @@
             <h3>Peristaltic Pump</h3>
             <p class="hw-role">Closed-loop flow</p>
             <p>Maintains a constant water-flow rate through the optical cell so the sample is representative. Cuts off automatically on alarm to stop further contaminant egress.</p>
-            <ul class="hw-meta"><li>12 V DC · ~1.5 L/min</li><li>Anti-settling stir-pre</li></ul>
+            <ul class="hw-meta"><li>12 V DC · ~1.5 L/min</li><li>Closed-loop circulation</li></ul>
+          </article>
+          <article class="hw-card hw-mix">
+            <div class="hw-icon" aria-hidden="true">∿</div>
+            <h3>Mixing Chamber</h3>
+            <p class="hw-role">Anti-settling pre-stage</p>
+            <p>Inline turbulence section that homogenises the water sample before it enters the optical flow cell. Prevents pellets from settling so the AI sees a representative sample, not a stratified one.</p>
+            <ul class="hw-meta"><li>Static mixing baffles</li><li>Upstream of camera</li></ul>
+          </article>
+          <article class="hw-card hw-indicator">
+            <div class="hw-icon" aria-hidden="true">▣</div>
+            <h3>LCD &middot; LEDs &middot; Buzzer</h3>
+            <p class="hw-role">Local indicators</p>
+            <p>I²C 16×2 LCD displays the current FSM state and operator messages. RGB LEDs (green / yellow / red) and a piezo buzzer mirror the FSM output stage so a worker can read the status from across the bay.</p>
+            <ul class="hw-meta"><li>I²C 0x27</li><li>GPIO 5 / 6 / 7 / 8</li></ul>
           </article>
         </div>
 
@@ -210,6 +224,27 @@
             <div class="arch-node arch-web">
               <strong>Web dashboard</strong>
               <span>Live HUD · 3D twin</span>
+            </div>
+          </div>
+
+          <div class="protocol-grid">
+            <div class="protocol-card">
+              <div class="protocol-label">Jetson → Arduino · 1 Hz</div>
+<pre><code>{
+  "state":      "WARN | CRIT | CLEAR",
+  "confidence": 0.85,
+  "count":      12
+}</code></pre>
+            </div>
+            <div class="protocol-card">
+              <div class="protocol-label">Arduino → Jetson · 5 Hz</div>
+<pre><code>{
+  "fsm_state": "S1",
+  "valve":     "OPEN",
+  "ldr":       542,
+  "gas":       380,
+  "load_g":    3.4
+}</code></pre>
             </div>
           </div>
         </div>

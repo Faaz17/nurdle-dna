@@ -6,11 +6,11 @@
   // ────────────────────────────────────────────────────────────
 
   const STATE = {
-    S0: { name: 'INIT',    valve: 'Open',   pump: 'Running', uv: 'Off', buzzer: 'Off', lcd: 'Booting…',     led: 'Cyan',  pill: 'is-init' },
-    S1: { name: 'SysOk',   valve: 'Open',   pump: 'Running', uv: 'Off', buzzer: 'Off', lcd: 'Sys OK',       led: 'Green', pill: '' },
-    S2: { name: 'Caution', valve: 'Open',   pump: 'Running', uv: 'On',  buzzer: 'Off', lcd: 'Caution',      led: 'Amber', pill: 'is-warn' },
-    S3: { name: 'ALARM',   valve: 'Closed', pump: 'Off',     uv: 'On',  buzzer: 'On',  lcd: 'ALARM-LATCH',  led: 'Red',   pill: 'is-crit' },
-    S4: { name: 'RST',     valve: 'Open',   pump: 'Running', uv: 'Off', buzzer: 'Off', lcd: 'Reset…',       led: 'Cyan',  pill: 'is-init' },
+    S0: { name: 'INIT',    valve: 'Open',   pump: 'Running', uv: 'Off', buzzer: 'Off', lcd: 'Booting…',     led: 'All ON', pill: 'is-init' },
+    S1: { name: 'SysOk',   valve: 'Open',   pump: 'Running', uv: 'Off', buzzer: 'Off', lcd: 'Sys OK',       led: 'Green',  pill: '' },
+    S2: { name: 'Causn',   valve: 'Open',   pump: 'Running', uv: 'On',  buzzer: 'Off', lcd: 'Causn',        led: 'Yellow', pill: 'is-warn' },
+    S3: { name: 'ALRM',    valve: 'Closed', pump: 'Off',     uv: 'On',  buzzer: 'On',  lcd: 'ALRM-LATCH',   led: 'Red',    pill: 'is-crit' },
+    S4: { name: 'RSTIN',   valve: 'Open',   pump: 'Running', uv: 'Off', buzzer: 'Off', lcd: 'Reset…',       led: 'All ON', pill: 'is-init' },
   };
 
   const sim = {

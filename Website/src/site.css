@@ -1358,7 +1358,9 @@ h3 {
 .hw-ldr     .hw-icon { background: rgba(95, 214, 255, 0.12); border-color: rgba(95, 214, 255, 0.35); color: #5fd6ff; }
 .hw-load    .hw-icon { background: rgba(255, 220, 100, 0.12); border-color: rgba(255, 220, 100, 0.35); color: #ffd866; }
 .hw-valve   .hw-icon { background: rgba(255, 100, 100, 0.12); border-color: rgba(255, 100, 100, 0.35); color: #ff8a8a; }
-.hw-pump    .hw-icon { background: rgba(70, 220, 200, 0.12); border-color: rgba(70, 220, 200, 0.35); color: #6be0c8; }
+.hw-pump      .hw-icon { background: rgba(70, 220, 200, 0.12); border-color: rgba(70, 220, 200, 0.35); color: #6be0c8; }
+.hw-mix       .hw-icon { background: rgba(170, 220, 255, 0.12); border-color: rgba(170, 220, 255, 0.35); color: #b8d8ff; }
+.hw-indicator .hw-icon { background: rgba(255, 200, 90, 0.12); border-color: rgba(255, 200, 90, 0.35); color: #ffd070; }
 
 .hw-card h3 {
   margin: 0 0 4px;
@@ -1468,6 +1470,46 @@ h3 {
 .arch-jetson   { border-color: rgba(160, 130, 255, 0.3); background: rgba(160, 130, 255, 0.05); }
 .arch-cloud    { border-color: rgba(255, 180, 80, 0.3); background: rgba(255, 180, 80, 0.05); }
 .arch-web      { border-color: rgba(67, 224, 138, 0.3); background: rgba(67, 224, 138, 0.05); }
+
+.protocol-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.protocol-card {
+  padding: 14px 18px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.protocol-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #2ebeca;
+  margin-bottom: 8px;
+}
+
+.protocol-card pre {
+  margin: 0;
+  padding: 0;
+  font-family: ui-monospace, SF Mono, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  color: rgba(233, 246, 244, 0.85);
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.protocol-card code {
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+}
 
 .hw-cta {
   display: flex;

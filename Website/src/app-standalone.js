@@ -20,6 +20,7 @@ const scenes = [
       report: 'Template ready',
       fsm_state: 'S0',
       dna_source: '--',
+      temperature: '--',
       device_id: 'NURDLE-001',
     },
     visual: { spill: 0, pipePellets: 0, cartridge: 0, valve: 0, alarm: 0, vapor: 0, ai: 0, report: 0 },
@@ -45,6 +46,7 @@ const scenes = [
       report: 'Standby',
       fsm_state: 'S1',
       dna_source: '--',
+      temperature: '24.2 °C',
       device_id: 'NURDLE-001',
     },
     visual: { spill: 0, pipePellets: 0, cartridge: 0, valve: 0, alarm: 0, vapor: 0, ai: 0.18, report: 0 },
@@ -70,6 +72,7 @@ const scenes = [
       report: 'Pending',
       fsm_state: 'S2',
       dna_source: 'Analysing',
+      temperature: '25.1 °C',
       device_id: 'NURDLE-001',
     },
     visual: { spill: 1, pipePellets: 0.82, cartridge: 0.08, valve: 0, alarm: 0.45, vapor: 0.85, ai: 1, report: 0 },
@@ -95,6 +98,7 @@ const scenes = [
       report: 'Generated',
       fsm_state: 'S3',
       dna_source: 'SOURCE-B',
+      temperature: '26.4 °C',
       device_id: 'NURDLE-001',
     },
     visual: { spill: 0.62, pipePellets: 0.45, cartridge: 1, valve: 1, alarm: 1, vapor: 0.58, ai: 1, report: 0.35 },
@@ -120,6 +124,7 @@ const scenes = [
       report: 'Generated',
       fsm_state: 'S3',
       dna_source: 'SOURCE-B',
+      temperature: '26.4 °C',
       device_id: 'NURDLE-001',
     },
     visual: { spill: 0.2, pipePellets: 0.12, cartridge: 1, valve: 1, alarm: 0.2, vapor: 0.18, ai: 0.72, report: 1 },
@@ -153,6 +158,7 @@ const dom = {
     report: document.querySelector('#reportValue'),
     fsm_state: document.querySelector('#fsmStateValue'),
     dna_source: document.querySelector('#dnaSourceValue'),
+    temperature: document.querySelector('#temperatureValue'),
     device_id: document.querySelector('#deviceIdValue'),
   },
 };
@@ -934,6 +940,7 @@ function setScene(index, moveCamera = false) {
   dom.metrics.report.textContent = profile.dashboard.report;
   dom.metrics.fsm_state.textContent = profile.dashboard.fsm_state;
   dom.metrics.dna_source.textContent = profile.dashboard.dna_source;
+  if (dom.metrics.temperature) dom.metrics.temperature.textContent = profile.dashboard.temperature || '--';
   dom.metrics.device_id.textContent = profile.dashboard.device_id;
   startTimestampClock(activeScene > 0);
 
@@ -1112,6 +1119,7 @@ function roundRect(ctx, x, y, width, height, radius) {
       if (dom.metrics.gas_ppm) dom.metrics.gas_ppm.textContent = data.gas_ppm != null ? data.gas_ppm + ' ppm' : '--';
       if (dom.metrics.fsm_state) dom.metrics.fsm_state.textContent = data.fsm_state || '--';
       if (dom.metrics.dna_source) dom.metrics.dna_source.textContent = data.dna_source || '--';
+      if (dom.metrics.temperature) dom.metrics.temperature.textContent = data.temperature != null ? data.temperature + ' °C' : '--';
       if (dom.metrics.valve) dom.metrics.valve.textContent = data.valve || '--';
       if (dom.metrics.mass) dom.metrics.mass.textContent = data.grams_captured != null ? data.grams_captured + ' g' : '--';
       if (dom.metrics.timestamp) {

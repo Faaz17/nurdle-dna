@@ -2,7 +2,46 @@
   'use strict';
 
   // ──────────────────────────────────────────────
-  // 1. Scroll-triggered fade-up via IntersectionObserver
+  // 1. Lenis smooth scroll (loads from CDN, falls back to native if blocked)
+  // ──────────────────────────────────────────────
+
+  function initLenis() {
+    if (typeof Lenis === 'undefined') return;
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      smoothTouch: false,
+      touchMultiplier: 1.6,
+    });
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+    window.lenis = lenis;
+  }
+
+  // Attempt to load Lenis from CDN
+  const lenisScript = document.createElement('script');
+  lenisScript.src = 'https://unpkg.com/lenis@1.1.13/dist/lenis.min.js';
+  lenisScript.onload = initLenis;
+  document.head.appendChild(lenisScript);
+
+  // ──────────────────────────────────────────────
+  // 2. Page load: reveal nav + WebGL background + hero scroll cue
+  // ──────────────────────────────────────────────
+
+  window.addEventListener('load', () => {
+    document.querySelector('.ag-nav')?.classList.add('is-visible');
+    document.querySelector('.ag-hero')?.classList.add('is-visible');
+    setTimeout(() => {
+      document.querySelector('.ag-webgl')?.classList.add('is-visible');
+    }, 400);
+  });
+
+  // ──────────────────────────────────────────────
+  // 3. Scroll-triggered fade-up (IntersectionObserver)
   // ──────────────────────────────────────────────
 
   const fadeObserver = new IntersectionObserver(
@@ -14,13 +53,12 @@
         }
       });
     },
-    { threshold: 0.18, rootMargin: '0px 0px -60px 0px' }
+    { threshold: 0.18, rootMargin: '0px 0px -80px 0px' }
   );
 
   document
     .querySelectorAll('[data-anim], [data-anim-stagger]')
     .forEach((el) => {
-      // For stagger containers, set --i index on each child
       if (el.hasAttribute('data-anim-stagger')) {
         Array.from(el.children).forEach((child, idx) => {
           child.style.setProperty('--i', idx);
@@ -30,49 +68,30 @@
     });
 
   // ──────────────────────────────────────────────
-  // 2. Hero chip mouse parallax (smoothed via lerp)
-  // ──────────────────────────────────────────────
-
-  const chip = document.querySelector('.ag-chip');
-  let targetMx = 0;
-  let targetMy = 0;
-  let currentMx = 0;
-  let currentMy = 0;
-
-  document.addEventListener('mousemove', (e) => {
-    targetMx = (e.clientX / window.innerWidth - 0.5) * 2;
-    targetMy = (e.clientY / window.innerHeight - 0.5) * 2;
-  }, { passive: true });
-
-  function tickChip() {
-    currentMx += (targetMx - currentMx) * 0.06;
-    currentMy += (targetMy - currentMy) * 0.06;
-    if (chip) {
-      chip.style.setProperty('--mx', currentMx.toFixed(3));
-      chip.style.setProperty('--my', currentMy.toFixed(3));
-    }
-    requestAnimationFrame(tickChip);
-  }
-  if (chip) tickChip();
-
-  // ──────────────────────────────────────────────
-  // 3. Scroll progress bar (top of page)
+  // 4. Scroll progress bar + hide hero scroll cue when scrolling
   // ──────────────────────────────────────────────
 
   const progress = document.createElement('div');
   progress.className = 'ag-progress';
   document.body.appendChild(progress);
 
-  function updateProgress() {
+  const hero = document.querySelector('.ag-hero');
+
+  function onScroll() {
     const max = document.documentElement.scrollHeight - window.innerHeight;
     const pct = max > 0 ? (window.scrollY / max) * 100 : 0;
     progress.style.width = pct + '%';
+
+    if (hero) {
+      const scrolled = window.scrollY;
+      hero.classList.toggle('is-scroll-label-hidden', scrolled > 80);
+    }
   }
-  window.addEventListener('scroll', updateProgress, { passive: true });
-  updateProgress();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 
   // ──────────────────────────────────────────────
-  // 4. Stat counter animation (count up when in view)
+  // 5. Stat counter (count up when in view) — kept from previous version
   // ──────────────────────────────────────────────
 
   function animateCount(el, target, duration) {
@@ -102,43 +121,70 @@
     },
     { threshold: 0.6 }
   );
-
   document
-    .querySelectorAll('.ag-stat-num[data-count]')
+    .querySelectorAll('[data-count]')
     .forEach((el) => countObserver.observe(el));
 
   // ──────────────────────────────────────────────
-  // 5. Subtle parallax drift on hero copy as you scroll
-  // ──────────────────────────────────────────────
-
-  const heroCopy = document.querySelector('.ag-hero-copy');
-  const heroVisual = document.querySelector('.ag-hero-visual');
-
-  function applyHeroParallax() {
-    const scrolled = window.scrollY;
-    if (heroCopy && scrolled < window.innerHeight) {
-      heroCopy.style.transform = 'translateY(' + scrolled * 0.18 + 'px)';
-      heroCopy.style.opacity = String(1 - scrolled / (window.innerHeight * 0.9));
-    }
-    if (heroVisual && scrolled < window.innerHeight) {
-      heroVisual.style.transform = 'translateY(' + scrolled * -0.08 + 'px)';
-    }
-  }
-  window.addEventListener('scroll', applyHeroParallax, { passive: true });
-
-  // ──────────────────────────────────────────────
-  // 6. Smooth in-page anchor scrolling — already by CSS scroll-behavior,
-  //    but we set focus on landing for accessibility
+  // 6. Smooth in-page anchor scrolling
   // ──────────────────────────────────────────────
 
   document.querySelectorAll('a[href^="#"]').forEach((link) => {
     link.addEventListener('click', (e) => {
       const id = link.getAttribute('href').slice(1);
-      const target = id && document.getElementById(id);
-      if (target) {
-        e.preventDefault();
+      if (!id) return;
+      const target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+      if (window.lenis) {
+        window.lenis.scrollTo(target, { offset: -100 });
+      } else {
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });
   });
+
+  // ──────────────────────────────────────────────
+  // 7. Active nav link tracking
+  // ──────────────────────────────────────────────
+
+  const navLinks = document.querySelectorAll('.ag-header-link[href^="#"]');
+  const sections = Array.from(navLinks)
+    .map((link) => document.getElementById(link.getAttribute('href').slice(1)))
+    .filter(Boolean);
+
+  const activeObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          navLinks.forEach((l) => l.classList.remove('active'));
+          const link = document.querySelector('.ag-header-link[href="#' + entry.target.id + '"]');
+          if (link) link.classList.add('active');
+        }
+      });
+    },
+    { rootMargin: '-40% 0px -55% 0px' }
+  );
+  sections.forEach((s) => activeObserver.observe(s));
+
+  // ──────────────────────────────────────────────
+  // 8. Cursor-driven subtle parallax on hero copy
+  // ──────────────────────────────────────────────
+
+  const heroCopy = document.querySelector('.ag-hero-edito');
+  let tx = 0, ty = 0, cx = 0, cy = 0;
+  document.addEventListener('mousemove', (e) => {
+    tx = (e.clientX / window.innerWidth - 0.5);
+    ty = (e.clientY / window.innerHeight - 0.5);
+  }, { passive: true });
+
+  function tickHero() {
+    cx += (tx - cx) * 0.05;
+    cy += (ty - cy) * 0.05;
+    if (heroCopy && window.scrollY < window.innerHeight) {
+      heroCopy.style.transform = 'translate(' + cx * 8 + 'px,' + cy * 6 + 'px)';
+    }
+    requestAnimationFrame(tickHero);
+  }
+  tickHero();
 })();

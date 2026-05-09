@@ -9,70 +9,75 @@
   </head>
   <body>
 
+    <!-- WEBGL background canvas (driven by site.js Three.js scene) -->
+    <div class="ag-webgl" aria-hidden="true">
+      <canvas id="futureWorld"></canvas>
+    </div>
+
+    <!-- TOP NAV -->
     <header class="ag-nav" aria-label="Site navigation">
-      <a class="ag-brand" href="#top" aria-label="NurdleDNA home">
-        <span class="ag-brand-mark">N</span>
-        <span>NurdleDNA</span>
-        <span class="ag-brand-divider">|</span>
-        <span class="ag-brand-tagline">Industrial Environmental Firewall</span>
-      </a>
-      <nav class="ag-nav-links" aria-label="Primary">
-        <a href="#intro">Introducing</a>
-        <a href="#hardware">Hardware</a>
-        <a href="./live-demo.html">Live demo</a>
-        <a href="./digital-twin.html">3D twin</a>
-        <a href="#team">Team</a>
-      </nav>
-      <a class="ag-nav-cta" href="#team">Contact ↗</a>
+      <div class="ag-nav-container">
+        <div class="ag-logo-and-tagline">
+          <a href="#hero" class="ag-logo" aria-label="NurdleDNA home">
+            <span class="ag-logo-mark">N</span>
+            <span>NurdleDNA</span>
+          </a>
+          <span class="ag-tagline-separator" aria-hidden="true"></span>
+          <p class="ag-tagline">Practical Environmental Computing</p>
+        </div>
+        <nav class="ag-header-links" aria-label="Primary">
+          <a href="#mission"     class="ag-header-link">Introduction</a>
+          <span class="ag-header-separator">/</span>
+          <a href="#specificity" class="ag-header-link">Architecture</a>
+          <span class="ag-header-separator">/</span>
+          <a href="#advantages"  class="ag-header-link">Advantages</a>
+          <span class="ag-header-separator">/</span>
+          <a href="#hardware"    class="ag-header-link">Hardware</a>
+          <span class="ag-header-separator">/</span>
+          <a href="#team"        class="ag-header-link">Team</a>
+          <span class="ag-header-separator">/</span>
+          <a href="./live-demo.html" class="ag-header-link">Live demo</a>
+        </nav>
+      </div>
     </header>
 
-    <main id="top">
+    <main>
 
-      <!-- HERO ──────────────────────────────────────────────── -->
-      <section class="ag-hero" aria-labelledby="hero-title">
-        <div class="ag-hero-grid">
-          <div class="ag-hero-copy">
-            <span class="ag-section-label">Practical Environmental Computing</span>
-            <h1 id="hero-title">STILL FLUSHING<br>NURDLES?</h1>
-            <p class="ag-hero-lead">
-              NurdleDNA is leading the shift to AI-powered industrial drain monitoring &mdash;
-              detect, contain, and prove pellet leakage at the source, before pollution escapes
-              into stormwater, soil, and the sea.
-            </p>
+      <!-- HERO -->
+      <section class="ag-hero" id="hero">
+        <div class="ag-container">
+          <div class="ag-hero-edito">
+            <div class="ag-hero-title">
+              <h1>Still flushing<br>nurdles?</h1>
+            </div>
+            <div class="ag-hero-paragraph">
+              <p>NurdleDNA is leading the shift to AI-powered industrial drain monitoring, to keep microplastics out of the watershed.</p>
+            </div>
             <div class="ag-hero-actions">
-              <a class="ag-button is-primary" href="./live-demo.html">
+              <a href="./live-demo.html" class="ag-button primary">
                 Open live control panel
                 <span class="arrow">→</span>
               </a>
-              <a class="ag-button" href="./digital-twin.html">
+              <a href="./digital-twin.html" class="ag-button">
                 3D digital twin
                 <span class="arrow">→</span>
               </a>
             </div>
           </div>
-
-          <div class="ag-hero-visual" aria-hidden="true">
-            <div class="ag-chip">
-              <div class="ag-chip-pins top"></div>
-              <div class="ag-chip-pins bottom"></div>
-              <div class="ag-chip-pins left"></div>
-              <div class="ag-chip-pins right"></div>
-              <div class="ag-chip-core">
-                <span>NRDL-001</span>
-                <span>arc-tech v0.4.0</span>
-              </div>
-              <div class="ag-chip-scan"></div>
+          <div class="ag-scroll-label-container">
+            <div class="ag-scroll-label">
+              <p class="text">
+                <span>Scroll to</span>
+                <span>discover</span>
+              </p>
             </div>
           </div>
         </div>
-
-        <a class="ag-scroll-cue" href="#intro">Scroll to discover</a>
       </section>
 
-      <!-- MARQUEE ──────────────────────────────────────────── -->
+      <!-- MARQUEE STRIP -->
       <section class="ag-marquee" aria-hidden="true">
         <div class="ag-marquee-track">
-          <!-- track A -->
           <span class="ag-marquee-item"><span class="dot"></span>JETSON NANO</span>
           <span class="ag-marquee-item">YOLOv8n &middot; <span class="accent">94% mAP</span></span>
           <span class="ag-marquee-item"><span class="dot"></span>ARDUINO UNO</span>
@@ -85,7 +90,7 @@
           <span class="ag-marquee-item">closure &lt; <span class="accent">1 second</span></span>
           <span class="ag-marquee-item"><span class="dot"></span>FIREBASE RTDB</span>
           <span class="ag-marquee-item">/devices/NURDLE-001</span>
-          <!-- track B duplicate for seamless loop -->
+          <!-- duplicate for loop -->
           <span class="ag-marquee-item"><span class="dot"></span>JETSON NANO</span>
           <span class="ag-marquee-item">YOLOv8n &middot; <span class="accent">94% mAP</span></span>
           <span class="ag-marquee-item"><span class="dot"></span>ARDUINO UNO</span>
@@ -101,114 +106,132 @@
         </div>
       </section>
 
-      <!-- INTRO SPOTLIGHT ──────────────────────────────────── -->
-      <section class="ag-spotlight" id="intro" data-anim="fade-up">
-        <span class="ag-label">Introducing NurdleDNA</span>
-        <p class="ag-spot-body">
-          Industry is boxed in by the limits of <strong>traditional drain monitoring.</strong>
-          Manual inspection is slow, sample-based testing is reactive, and pellet leakage
-          often only gets noticed <em>after</em> it's already in the watershed. NurdleDNA
-          is an inline IoT unit that detects, contains, weighs, and reports nurdle
-          contamination <strong>in real time &mdash; at the source.</strong>
-        </p>
-      </section>
-
-      <!-- STAT STRIP ───────────────────────────────────────── -->
-      <section class="ag-stat-strip" aria-label="Headline metrics" data-anim-stagger>
-        <div class="ag-stat">
-          <div class="ag-stat-label">Valve closure</div>
-          <div class="ag-stat-value">&lt;&nbsp;<span class="ag-stat-num" data-count="1">0</span><span class="ag-stat-unit">sec</span></div>
-        </div>
-        <div class="ag-stat">
-          <div class="ag-stat-label">Density index</div>
-          <div class="ag-stat-value"><span class="ag-stat-num" data-count="72">0</span><span class="ag-stat-unit">/ 100</span></div>
-        </div>
-        <div class="ag-stat">
-          <div class="ag-stat-label">Captured mass</div>
-          <div class="ag-stat-value"><span class="ag-stat-num" data-count="18.6">0</span><span class="ag-stat-unit">g</span></div>
-        </div>
-        <div class="ag-stat">
-          <div class="ag-stat-label">FSM states</div>
-          <div class="ag-stat-value"><span class="ag-stat-num" data-count="5">0</span><span class="ag-stat-unit">moore</span></div>
-        </div>
-      </section>
-
-      <!-- DETECTION ────────────────────────────────────────── -->
-      <section class="ag-spotlight" data-anim="fade-up">
-        <span class="ag-label">Detection</span>
-        <div>
-          <p class="ag-spot-body">
-            <strong>AI vision plus multi-channel sensing</strong> &mdash; confirm pellet leakage
-            in under one second. An NVIDIA Jetson Nano runs YOLOv8n on the optical flow cell
-            while an MQ-135 gas sensor and an LDR turbidity probe corroborate the event
-            <em>before</em> the FSM commits.
-          </p>
-          <div class="ag-spot-meta">
-            <span>Jetson Nano · 4 GB</span>
-            <span>YOLOv8n inference</span>
-            <span>5 Hz sensor rate</span>
+      <!-- MISSION (Introducing) -->
+      <section class="ag-mission" id="mission" data-anim="fade-up">
+        <div class="ag-container">
+          <div class="ag-mission-edito">
+            <div class="ag-title-with-marker">
+              <span class="marker" aria-hidden="true"></span>
+              <h2>Introducing NurdleDNA</h2>
+            </div>
+            <div class="ag-introduction">
+              <p>Industry is boxed in by the <strong>limits of traditional drain monitoring</strong></p>
+            </div>
+          </div>
+          <div class="ag-paragraph">
+            <p><strong>Manual inspection is slow, sample-based testing is reactive,</strong> and pellet leakage often only gets noticed after it's already in the watershed. Conventional drains carry industrial waste straight to stormwater systems, soil, and the sea.</p>
+            <p>NurdleDNA is an inline IoT unit that <strong>detects, contains, weighs, and reports</strong> nurdle contamination in real time &mdash; <em>at the source</em>, before pollution escapes.</p>
           </div>
         </div>
       </section>
 
-      <!-- CONTAINMENT ──────────────────────────────────────── -->
-      <section class="ag-spotlight" data-anim="fade-up">
-        <span class="ag-label">Containment</span>
-        <div>
-          <p class="ag-spot-body">
-            An <strong>MG996R servo pinch valve closes within one second</strong> of an S3
-            (ALRM) latch &mdash; diverting contaminated flow into a removable evidence
-            cartridge instead of the drain. <span class="muted">The latch only releases when
-            an operator presses the physical reset button.</span>
-          </p>
-          <div class="ag-spot-meta">
-            <span>MG996R · 11 kg·cm</span>
-            <span>Closure &lt; 1 s</span>
-            <span>Latched in S3 ALRM</span>
+      <!-- SPECIFICITY (Architecture) -->
+      <section class="ag-specificity" id="specificity" data-anim="fade-up">
+        <div class="ag-container">
+          <div class="ag-first-edito">
+            <div class="ag-title-with-marker">
+              <span class="marker" aria-hidden="true"></span>
+              <h2>Architecture</h2>
+            </div>
+            <div class="ag-paragraph">
+              <p>Architected to deliver <strong>sub-second detection and containment</strong>, end-to-end &mdash; from optical flow cell to Firebase audit packet.</p>
+            </div>
+          </div>
+
+          <div class="ag-poi first-poi">
+            <span class="ag-poi-marker" aria-hidden="true"></span>
+            <div class="ag-poi-text">
+              <h3>Detection unit</h3>
+              <p>NVIDIA Jetson Nano runs YOLOv8n on the optical-flow-cell camera at 30 fps. MQ-135 gas + LDR turbidity probes corroborate the event before the FSM commits, eliminating false positives.</p>
+            </div>
+            <div class="ag-poi-illustration">CAM</div>
+          </div>
+
+          <div class="ag-poi second-poi">
+            <span class="ag-poi-marker" aria-hidden="true"></span>
+            <div class="ag-poi-text">
+              <h3>Containment unit</h3>
+              <p>Arduino Uno runs the 5-state Moore FSM and drives the MG996R servo pinch valve. Closure within one second of S3 latch &mdash; flow diverts into the evidence cartridge instead of the drain.</p>
+            </div>
+            <div class="ag-poi-illustration">FSM</div>
+          </div>
+
+          <div class="ag-poi">
+            <span class="ag-poi-marker" aria-hidden="true"></span>
+            <div class="ag-poi-text">
+              <h3>Evidence unit</h3>
+              <p>HX711 load cell weighs the captured cartridge in real time. UV LED 365 nm fluorescence excites pellet polymer, classified by AI into a forensic <em>DNA Source</em> field on every audit packet.</p>
+            </div>
+            <div class="ag-poi-illustration">EVD</div>
           </div>
         </div>
       </section>
 
-      <!-- EVIDENCE ─────────────────────────────────────────── -->
-      <section class="ag-spotlight" data-anim="fade-up">
-        <span class="ag-label">Evidence</span>
-        <div>
-          <p class="ag-spot-body">
-            <strong>HX711 load cell + sealed cartridge</strong> &mdash; physical proof of
-            captured mass, in grams. AI vision saves a proof-frame image and the 365 nm UV
-            LED ring fluoresces the polymer for source classification &mdash; a forensic
-            <em>DNA Source</em> field on every audit packet.
-          </p>
-          <div class="ag-spot-meta">
-            <span>HX711 · 24-bit ADC</span>
-            <span>1–5 kg load cell</span>
-            <span>UV 365 nm fluorescence</span>
+      <!-- ADVANTAGES (Performance, Speed, Energy) -->
+      <section class="ag-advantages" id="advantages" data-anim="fade-up">
+        <div class="ag-container">
+          <div class="ag-advantages-block speed">
+            <div class="ag-title-with-marker">
+              <span class="marker" aria-hidden="true"></span>
+              <h2>Performance</h2>
+            </div>
+            <div class="description">
+              <p><strong>Higher detection capacity:</strong> AI vision flags 126 pellets per frame with 94% confidence on the optical flow cell. Multi-channel sensing eliminates false positives before the FSM ever commits.</p>
+            </div>
+          </div>
+          <div class="ag-advantages-block performance">
+            <div class="ag-title-with-marker">
+              <span class="marker" aria-hidden="true"></span>
+              <h2>Speed</h2>
+            </div>
+            <div class="description">
+              <p><strong>Sub-second response:</strong> the servo pinch valve closes in under one second of an S3 latch. Sensor sample rate runs at 5 Hz, and alarm-to-actuation latency stays bounded.</p>
+            </div>
+          </div>
+          <div class="ag-advantages-block energy">
+            <div class="ag-title-with-marker">
+              <span class="marker" aria-hidden="true"></span>
+              <h2>Evidence</h2>
+            </div>
+            <div class="description">
+              <p><strong>Audit-grade compliance:</strong> every event is timestamped, weighed by HX711 load cell, and written to Firebase with bay ID, density index, gas ppm, and DNA source &mdash; searchable, exportable, traceable.</p>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- REPORTING ────────────────────────────────────────── -->
-      <section class="ag-spotlight" data-anim="fade-up">
-        <span class="ag-label">Reporting</span>
-        <div>
-          <p class="ag-spot-body">
-            <strong>Audit-grade compliance packets</strong> uploaded to Firebase Realtime
-            Database &mdash; timestamp, bay ID, captured mass, gas ppm, FSM state, DNA source
-            &mdash; live to the web dashboard within seconds. <em>Every incident traceable.
-            Every gram accounted for.</em>
-          </p>
-          <div class="ag-spot-meta">
-            <span>Firebase RTDB</span>
-            <span>/devices/NURDLE-001</span>
-            <span>10-field audit packet</span>
+      <!-- DEPLOYMENT (Interoperability) -->
+      <section class="ag-deployment" id="deployment" data-anim="fade-up">
+        <div class="ag-container">
+          <div class="ag-deployment-edito">
+            <div class="ag-title-with-marker title">
+              <span class="marker" aria-hidden="true"></span>
+              <h2>Interoperability</h2>
+            </div>
+            <div class="ag-introduction">
+              <p><strong>Compatible with industry-standard</strong> IIoT platforms and existing drain infrastructure</p>
+            </div>
+            <div class="paragraphs">
+              <div class="ag-paragraph">
+                <p>NurdleDNA bolts inline to existing drain stacks. Power over USB-C, Ethernet for networking, and the Firebase audit packet pushes to any compliance dashboard.</p>
+              </div>
+              <div class="ag-paragraph">
+                <p>Our software stack, <em>arc-tech v0.4.0</em>, abstracts hardware behind a JSON serial protocol. Operators see one dashboard. Engineers can swap sensors without touching the FSM.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ag-container second-container">
+          <div class="ag-quote" data-anim="fade-up">
+            <p><strong>Cleaner industry, cleaner future</strong></p>
           </div>
         </div>
       </section>
 
-      <!-- HARDWARE SECTION ─────────────────────────────────── -->
+      <!-- HARDWARE SECTION (kept in original structure but restyled) -->
       <section id="hardware" class="hardware-section" aria-label="Hardware components">
         <div class="hardware-head">
-          <p class="section-kicker">Inside the box</p>
+          <p class="section-kicker">↳ Inside the box</p>
           <h2>The hardware stack</h2>
           <p class="hardware-lead">
             Two processors. Three sensor channels. One pinch valve. A pellet cartridge with a load cell.
@@ -345,73 +368,95 @@
         </div>
       </section>
 
-      <!-- IMPACT SPOTLIGHT ─────────────────────────────────── -->
-      <section class="ag-spotlight" data-anim="fade-up">
-        <span class="ag-label">Impact</span>
-        <p class="ag-spot-body">
-          NurdleDNA <strong>protects the coastline and the balance sheet.</strong> Pellets
-          stopped before drains, sea, or soil. Stormwater systems and marine life kept
-          clean. Cleanup cost reduced. Fines avoided. <em>Compliance becomes data, not
-          paperwork.</em>
-        </p>
-      </section>
-
-      <!-- DEMO CTA ─────────────────────────────────────────── -->
-      <section id="demo" class="demo-section">
-        <p class="section-kicker">See it in action</p>
-        <h2>Watch the full contamination response cycle.</h2>
-        <p>The interactive digital twin walks through all five stages — site commissioning, safe monitoring, spill detection, valve lockdown, and audit report — driven by the same logic as the real device.</p>
-        <a class="final-link" href="./digital-twin.html">Open digital twin →</a>
-      </section>
-
-      <!-- TEAM ─────────────────────────────────────────────── -->
-      <section id="team" class="team-section">
-        <div class="team-inner">
-          <p class="section-kicker team-kicker">The people behind it</p>
-          <h2 class="team-heading">Arc Tech &mdash; Team 2</h2>
-          <p class="team-subtitle">ECTE 250 &middot; University of Wollongong in Dubai</p>
-          <div class="team-grid" data-anim-stagger>
-            <div class="team-card">
-              <div class="team-avatar" data-initials="MH" style="--c:#2ebeca"></div>
-              <strong>Muhammad Haaziq</strong>
-              <span class="team-badge" style="--bc:rgba(46,190,202,0.18);--bct:#2ebeca">System Architect</span>
-              <span class="team-sub">3D Model &amp; Project Lead</span>
+      <!-- TEAM -->
+      <section class="ag-team" id="team" data-anim="fade-up">
+        <div class="ag-container">
+          <div class="ag-team-edito">
+            <div class="ag-title-with-marker title">
+              <span class="marker" aria-hidden="true"></span>
+              <h2>Team</h2>
             </div>
-            <div class="team-card">
-              <div class="team-avatar" data-initials="FA" style="--c:#44c986"></div>
-              <strong>Faaz Ali Sayyed</strong>
-              <span class="team-badge" style="--bc:rgba(68,201,134,0.18);--bct:#44c986">Circuit Design</span>
-              <span class="team-sub">State Machine &amp; TinkerCAD</span>
+            <div class="ag-introduction">
+              <p>If you're excited about <strong>protecting industrial waterways</strong>, we'd love to hear from you</p>
             </div>
-            <div class="team-card">
-              <div class="team-avatar" data-initials="DK" style="--c:#5b9fff"></div>
-              <strong>Daniel Koshy</strong>
-              <span class="team-badge" style="--bc:rgba(91,159,255,0.18);--bct:#5b9fff">Circuit Simulation</span>
-              <span class="team-sub">Multisim &amp; Finance / WBS</span>
+            <div class="ag-paragraph">
+              <p>Arc Tech is the ECTE 250 Team 2 at the University of Wollongong in Dubai. We're building NurdleDNA from circuit board to compliance cloud &mdash; the people behind every commit, sensor, and audit packet.</p>
             </div>
-            <div class="team-card">
-              <div class="team-avatar" data-initials="MA" style="--c:#f07b58"></div>
-              <strong>Mohammed Abdul Rahman</strong>
-              <span class="team-badge" style="--bc:rgba(240,123,88,0.18);--bct:#f07b58">Marketing</span>
-              <span class="team-sub">Meeting Management</span>
-            </div>
+          </div>
+          <div class="ag-cards-grid" data-anim-stagger>
+            <article class="ag-card">
+              <div class="icon">MH</div>
+              <h3 class="title">Muhammad Haaziq</h3>
+              <span class="badge">System Architect</span>
+              <p class="description">3D Model &amp; Project Lead. Owns the device geometry and overall systems architecture.</p>
+            </article>
+            <article class="ag-card">
+              <div class="icon">FA</div>
+              <h3 class="title">Faaz Ali Sayyed</h3>
+              <span class="badge">Circuit Design</span>
+              <p class="description">State Machine &amp; TinkerCAD. Ports the FSM to silicon and runs the Arduino simulation.</p>
+            </article>
+            <article class="ag-card">
+              <div class="icon">DK</div>
+              <h3 class="title">Daniel Koshy</h3>
+              <span class="badge">Circuit Simulation</span>
+              <p class="description">Multisim &amp; Finance / WBS. Validates the analog front-end and runs the project budget.</p>
+            </article>
+            <article class="ag-card">
+              <div class="icon">MA</div>
+              <h3 class="title">Mohammed Abdul Rahman</h3>
+              <span class="badge">Marketing</span>
+              <p class="description">Meeting management, stakeholder comms, and the documentation backbone of the team.</p>
+            </article>
           </div>
         </div>
       </section>
 
-      <!-- FOOTER ───────────────────────────────────────────── -->
-      <footer class="ag-footer">
-        <div class="ag-footer-left">© 2026 Arc Tech · Team 2</div>
-        <div class="ag-footer-center">
-          <span class="dot" aria-hidden="true"></span>
-          <span>Practical environmental computing</span>
+      <!-- CONTACT -->
+      <section class="ag-contact" id="contact">
+        <div class="ag-container">
+          <div class="ag-contact-title" data-anim="fade-up">
+            <h2>Cleaner industry,<br>cleaner future</h2>
+          </div>
+          <div class="ag-contact-description" data-anim="fade-up">
+            <p>Practical Environmental Computing</p>
+          </div>
+          <div class="ag-contact-buttons" data-anim="fade-up">
+            <a href="./live-demo.html" class="ag-card-button">
+              <span>Open live control panel</span>
+              <span class="arrow">↗</span>
+            </a>
+            <a href="./digital-twin.html" class="ag-card-button">
+              <span>3D digital twin</span>
+              <span class="arrow">↗</span>
+            </a>
+            <a href="./cad-model.html" class="ag-card-button">
+              <span>CAD model</span>
+              <span class="arrow">↗</span>
+            </a>
+          </div>
         </div>
-        <div class="ag-footer-right">
-          <a href="https://github.com/Faaz17/nurdle-dna" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="ag-footer">
+        <div class="ag-container">
+          <p>© 2026 Arc Tech &middot; Team 2 &middot; ECTE 250</p>
+          <div class="links">
+            <a href="https://github.com/Faaz17/nurdle-dna" target="_blank" rel="noreferrer">GitHub ↗</a>
+            <a href="#hero">Top ↑</a>
+          </div>
         </div>
       </footer>
 
     </main>
+
+    <!-- WebGL background uses the original Three.js scene from site.js -->
+    <script src="./assets/vendor/three.global.min.js"></script>
+    <script src="./assets/vendor/STLLoader.global.js"></script>
+    <script src="./assets/vendor/OrbitControls.global.js"></script>
+    <script src="./assets/models/nurdle-dna-device-base64.js"></script>
+    <script src="./src/site.js" defer></script>
 
     <script src="./src/arago.js" defer></script>
   </body>

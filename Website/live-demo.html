@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NurdleDNA Live Control Panel</title>
+    <link rel="stylesheet" href="./src/live-demo.css">
+  </head>
+  <body class="demo-page">
+    <header class="demo-header" aria-label="Site navigation">
+      <a class="demo-brand" href="./index.html">
+        <span class="brand-mark">N</span>
+        <span>NurdleDNA</span>
+      </a>
+      <nav class="demo-nav" aria-label="Primary">
+        <a href="./index.html">Home</a>
+        <a href="./digital-twin.html">3D Twin</a>
+        <a href="./cad-model.html">CAD</a>
+        <a href="./live-demo.html" aria-current="page">Live Demo</a>
+      </nav>
+      <div class="demo-net">
+        <span class="net-led" id="netLed"></span>
+        <span id="netLabel">SIMULATED</span>
+      </div>
+    </header>
+
+    <main class="demo-main">
+      <section class="demo-intro">
+        <p class="kicker">Interactive control panel</p>
+        <h1>Live Device Simulator</h1>
+        <p class="lead">
+          A real-time, interactive simulation of NurdleDNA hardware. Trigger spill events, gas leaks, and resets;
+          watch the finite-state machine react, sensor readings update, and the audit log fill in &mdash; the same
+          behaviour the physical Arduino + Jetson Nano stack will produce once flashed.
+        </p>
+      </section>
+
+      <section class="demo-grid">
+
+        <article class="panel panel-fsm" aria-label="Finite state machine">
+          <header class="panel-head">
+            <h2>Finite-State Machine</h2>
+            <span class="state-pill" id="fsmPill">S1 &middot; SysOk</span>
+          </header>
+          <svg class="fsm-svg" viewBox="0 0 800 220" preserveAspectRatio="xMidYMid meet" role="img" aria-label="FSM diagram showing 5 states">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0,0 L10,5 L0,10 z" fill="rgba(255,255,255,0.45)"/>
+              </marker>
+            </defs>
+            <!-- transitions -->
+            <line x1="100" y1="110" x2="220" y2="110" stroke="rgba(255,255,255,0.3)" stroke-width="2" marker-end="url(#arrow)"/>
+            <line x1="300" y1="110" x2="420" y2="110" stroke="rgba(255,255,255,0.3)" stroke-width="2" marker-end="url(#arrow)"/>
+            <line x1="500" y1="110" x2="620" y2="110" stroke="rgba(255,255,255,0.3)" stroke-width="2" marker-end="url(#arrow)"/>
+            <path d="M 660 90 Q 500 0 260 90" fill="none" stroke="rgba(95,214,255,0.55)" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+            <text x="460" y="22" fill="rgba(95,214,255,0.7)" font-size="11" text-anchor="middle">RST (operator)</text>
+
+            <!-- states -->
+            <g class="fsm-state" data-state="S0"><circle cx="60" cy="110" r="40"/><text x="60" y="106" text-anchor="middle">S0</text><text x="60" y="124" text-anchor="middle" class="sub">INIT</text></g>
+            <g class="fsm-state" data-state="S1"><circle cx="260" cy="110" r="40"/><text x="260" y="106" text-anchor="middle">S1</text><text x="260" y="124" text-anchor="middle" class="sub">SysOk</text></g>
+            <g class="fsm-state" data-state="S2"><circle cx="460" cy="110" r="40"/><text x="460" y="106" text-anchor="middle">S2</text><text x="460" y="124" text-anchor="middle" class="sub">Caution</text></g>
+            <g class="fsm-state" data-state="S3"><circle cx="660" cy="110" r="40"/><text x="660" y="106" text-anchor="middle">S3</text><text x="660" y="124" text-anchor="middle" class="sub">ALARM</text></g>
+            <g class="fsm-state" data-state="S4"><circle cx="760" cy="190" r="22"/><text x="760" y="195" text-anchor="middle" class="small">S4 RST</text></g>
+          </svg>
+          <p class="fsm-note">S3 is <em>latched</em>: once contamination is confirmed, the valve stays closed until an operator presses the physical reset button.</p>
+        </article>
+
+        <article class="panel panel-controls" aria-label="Manual controls">
+          <header class="panel-head"><h2>Manual Controls</h2><span class="auto-toggle"><label><input type="checkbox" id="autoMode" checked><span>Auto-loop</span></label></span></header>
+          <div class="control-grid">
+            <button class="ctrl ctrl-warn" id="btnSpill">
+              <span class="ctrl-label">Trigger Spill</span>
+              <span class="ctrl-sub">Simulate pellet leakage at the loading bay</span>
+            </button>
+            <button class="ctrl ctrl-warn" id="btnGas">
+              <span class="ctrl-label">Simulate Gas Leak</span>
+              <span class="ctrl-sub">Push MQ-135 reading above critical threshold</span>
+            </button>
+            <button class="ctrl ctrl-info" id="btnTurbid">
+              <span class="ctrl-label">Cloudy Water</span>
+              <span class="ctrl-sub">Increase turbidity (LDR drop) only</span>
+            </button>
+            <button class="ctrl ctrl-ok" id="btnReset">
+              <span class="ctrl-label">Operator Reset</span>
+              <span class="ctrl-sub">Physical RST button &mdash; clears latched alarm</span>
+            </button>
+          </div>
+        </article>
+
+        <article class="panel panel-sensors" aria-label="Sensor readings">
+          <header class="panel-head"><h2>Live Sensor Readings</h2><span class="rate-pill">Sample rate &middot; 5 Hz</span></header>
+          <div class="sensor-grid">
+            <div class="sensor-card">
+              <div class="sensor-label">Turbidity (LDR)</div>
+              <div class="sensor-value"><strong id="sLdr">412</strong><small>raw</small></div>
+              <canvas class="sensor-graph" id="gLdr" width="320" height="60"></canvas>
+              <div class="sensor-meta">A0 &middot; threshold &gt; 600 &rarr; WARN</div>
+            </div>
+            <div class="sensor-card">
+              <div class="sensor-label">Gas (MQ-135)</div>
+              <div class="sensor-value"><strong id="sGas">48</strong><small>ppm</small></div>
+              <canvas class="sensor-graph" id="gGas" width="320" height="60"></canvas>
+              <div class="sensor-meta">A1 &middot; threshold &gt; 200 &rarr; CRIT</div>
+            </div>
+            <div class="sensor-card">
+              <div class="sensor-label">Pellet Count (AI)</div>
+              <div class="sensor-value"><strong id="sPellet">0</strong><small>per frame</small></div>
+              <canvas class="sensor-graph" id="gPellet" width="320" height="60"></canvas>
+              <div class="sensor-meta">Jetson Nano &middot; YOLOv8n inference</div>
+            </div>
+            <div class="sensor-card">
+              <div class="sensor-label">Captured Mass (HX711)</div>
+              <div class="sensor-value"><strong id="sMass">0.0</strong><small>g</small></div>
+              <canvas class="sensor-graph" id="gMass" width="320" height="60"></canvas>
+              <div class="sensor-meta">A2 &middot; load cell 1&ndash;5 kg</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel panel-device" aria-label="Device output state">
+          <header class="panel-head"><h2>Actuator &amp; Indicator State</h2></header>
+          <div class="device-grid">
+            <div class="device-tile" id="tileValve"><span>Valve</span><strong id="dValve">Open</strong></div>
+            <div class="device-tile" id="tilePump"><span>Pump</span><strong id="dPump">Running</strong></div>
+            <div class="device-tile" id="tileUv"><span>UV LED</span><strong id="dUv">Off</strong></div>
+            <div class="device-tile" id="tileBuzzer"><span>Buzzer</span><strong id="dBuzzer">Off</strong></div>
+            <div class="device-tile" id="tileLcd"><span>LCD line 1</span><strong id="dLcd">Sys OK</strong></div>
+            <div class="device-tile" id="tileLed"><span>Status LED</span><strong id="dLed">Green</strong></div>
+          </div>
+        </article>
+
+        <article class="panel panel-events" aria-label="Event log">
+          <header class="panel-head">
+            <h2>Audit Event Log</h2>
+            <button class="event-clear" id="btnClearLog">Clear</button>
+          </header>
+          <ol class="event-list" id="eventList" aria-live="polite"></ol>
+        </article>
+
+        <article class="panel panel-meta" aria-label="Device meta">
+          <header class="panel-head"><h2>Device Identity</h2></header>
+          <dl class="meta-list">
+            <div><dt>Device ID</dt><dd>NURDLE-001</dd></div>
+            <div><dt>Bay</dt><dd>BAY-1 &middot; Loading Bay 03</dd></div>
+            <div><dt>Firmware</dt><dd>arc-tech v0.4.0</dd></div>
+            <div><dt>Uptime</dt><dd id="uptime">00:00:00</dd></div>
+            <div><dt>Last cloud sync</dt><dd id="lastSync">&mdash;</dd></div>
+            <div><dt>Cloud</dt><dd>Firebase Realtime DB</dd></div>
+          </dl>
+        </article>
+
+      </section>
+    </main>
+
+    <script src="./src/live-demo.js"></script>
+  </body>
+</html>

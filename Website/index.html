@@ -15,9 +15,10 @@
       </a>
       <nav class="nav-links" aria-label="Primary">
         <a href="#how">How it works</a>
+        <a href="#hardware">Hardware</a>
         <a href="#impact">Impact</a>
-        <a href="#evidence">Evidence</a>
-        <a href="#demo">Demo</a>
+        <a href="./live-demo.html">Live demo</a>
+        <a href="./digital-twin.html">3D twin</a>
         <a href="#team">Team</a>
       </nav>
     </header>
@@ -33,13 +34,13 @@
             captures evidence, and creates a live compliance report before pollution escapes.
           </p>
           <div class="hero-actions">
-            <a href="./digital-twin.html" class="action-card primary-action">
-              <span>Open live simulation</span>
-              <small>Enter the 3D digital twin to watch detection, valve closure, evidence capture, and reporting in motion.</small>
+            <a href="./live-demo.html" class="action-card primary-action">
+              <span>Open live control panel</span>
+              <small>Interact with the device — trigger spills, gas leaks, watch the FSM react and the audit log fill in real time.</small>
             </a>
-            <a href="./cad-model.html" class="action-card secondary-action">
-              <span>Explore system</span>
-              <small>See how NurdleDNA connects AI vision, gas sensing, cartridge proof, and compliance dashboards.</small>
+            <a href="./digital-twin.html" class="action-card secondary-action">
+              <span>3D digital twin</span>
+              <small>Watch the full contamination response cycle play out across an industrial environment in 3D.</small>
             </a>
           </div>
         </div>
@@ -113,6 +114,110 @@
           <h3>Report action</h3>
           <p>Every incident is time-stamped and uploaded to Firebase with Bay ID, DNA source, proof image, valve state, and maintenance action.</p>
         </article>
+      </section>
+
+      <section id="hardware" class="hardware-section" aria-label="Hardware components">
+        <div class="hardware-head">
+          <p class="section-kicker">Inside the box</p>
+          <h2>The hardware stack</h2>
+          <p class="hardware-lead">
+            Two processors. Three sensor channels. One pinch valve. A pellet cartridge with a load cell.
+            Every component below is wired into the FSM and observable in the live demo.
+          </p>
+        </div>
+        <div class="hardware-grid">
+          <article class="hw-card hw-jetson">
+            <div class="hw-icon" aria-hidden="true">AI</div>
+            <h3>NVIDIA Jetson Nano</h3>
+            <p class="hw-role">AI vision &amp; cloud uplink</p>
+            <p>Runs YOLOv8n on the optical-flow-cell camera feed, classifies pellets, computes the Density Index, and pushes the audit packet to Firebase Realtime Database.</p>
+            <ul class="hw-meta"><li>4 GB · ARM Cortex-A57</li><li>USB Serial → Arduino</li></ul>
+          </article>
+          <article class="hw-card hw-arduino">
+            <div class="hw-icon" aria-hidden="true">μC</div>
+            <h3>Arduino Uno</h3>
+            <p class="hw-role">Real-time FSM &amp; actuation</p>
+            <p>Reads analog sensors at 5 Hz, runs the 5-state Moore FSM, drives the servo pinch valve, and latches the alarm until the operator presses the physical RST button.</p>
+            <ul class="hw-meta"><li>ATmega328P @ 16 MHz</li><li>I²C LCD, GPIO LEDs + buzzer</li></ul>
+          </article>
+          <article class="hw-card hw-cam">
+            <div class="hw-icon" aria-hidden="true">📷</div>
+            <h3>CSI/USB Camera + UV LED</h3>
+            <p class="hw-role">Optical detection</p>
+            <p>Captures the transparent flow-cell at 30 fps. A 365 nm UV LED ring excites pellet fluorescence so the AI can fingerprint the polymer source (DNA Source field).</p>
+            <ul class="hw-meta"><li>1080p · 30 fps</li><li>UV 365 nm</li></ul>
+          </article>
+          <article class="hw-card hw-gas">
+            <div class="hw-icon" aria-hidden="true">⚗</div>
+            <h3>MQ-135 Gas Sensor</h3>
+            <p class="hw-role">Headspace VOC monitoring</p>
+            <p>Mounted in the chamber headspace. Detects volatile organic compounds and ammonia leakage from the pellet stream. Critical threshold latches the FSM into S3.</p>
+            <ul class="hw-meta"><li>Analog → A1</li><li>Trip &gt; 200 ppm</li></ul>
+          </article>
+          <article class="hw-card hw-ldr">
+            <div class="hw-icon" aria-hidden="true">◈</div>
+            <h3>LDR Turbidity Probe</h3>
+            <p class="hw-role">Water clarity proxy</p>
+            <p>Photoresistor pair across the flow cell. Reads water turbidity as a corroborating signal to the AI vision count — confirms a contamination event before the FSM commits.</p>
+            <ul class="hw-meta"><li>Analog → A0</li><li>Trip &gt; 600 raw</li></ul>
+          </article>
+          <article class="hw-card hw-load">
+            <div class="hw-icon" aria-hidden="true">⚖</div>
+            <h3>HX711 + Load Cell</h3>
+            <p class="hw-role">Captured-mass evidence</p>
+            <p>Weighs the evidence cartridge during latched alarm. Reports captured mass in grams to the audit packet — physical proof for compliance reports.</p>
+            <ul class="hw-meta"><li>1–5 kg load cell</li><li>24-bit ADC bridge</li></ul>
+          </article>
+          <article class="hw-card hw-valve">
+            <div class="hw-icon" aria-hidden="true">⏚</div>
+            <h3>MG996R Servo + Pinch Valve</h3>
+            <p class="hw-role">Containment actuator</p>
+            <p>180° servo squeezes a silicone tube to close the outlet path within one second of S3 latch — diverting contaminated flow into the cartridge instead of the drain.</p>
+            <ul class="hw-meta"><li>11 kg·cm torque</li><li>Closure time &lt; 1 s</li></ul>
+          </article>
+          <article class="hw-card hw-pump">
+            <div class="hw-icon" aria-hidden="true">↻</div>
+            <h3>Peristaltic Pump</h3>
+            <p class="hw-role">Closed-loop flow</p>
+            <p>Maintains a constant water-flow rate through the optical cell so the sample is representative. Cuts off automatically on alarm to stop further contaminant egress.</p>
+            <ul class="hw-meta"><li>12 V DC · ~1.5 L/min</li><li>Anti-settling stir-pre</li></ul>
+          </article>
+        </div>
+
+        <div class="hw-arch">
+          <h3>Data flow</h3>
+          <div class="arch-flow">
+            <div class="arch-node arch-sensors">
+              <strong>Sensors</strong>
+              <span>LDR · MQ-135 · HX711 · Camera</span>
+            </div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-node arch-arduino">
+              <strong>Arduino Uno</strong>
+              <span>FSM · valve · LCD · LEDs</span>
+            </div>
+            <span class="arch-arrow">⇄ JSON</span>
+            <div class="arch-node arch-jetson">
+              <strong>Jetson Nano</strong>
+              <span>AI vision · Density Index</span>
+            </div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-node arch-cloud">
+              <strong>Firebase RTDB</strong>
+              <span>Audit packet · /devices/NURDLE-001</span>
+            </div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-node arch-web">
+              <strong>Web dashboard</strong>
+              <span>Live HUD · 3D twin</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hw-cta">
+          <a class="final-link" href="./live-demo.html">Open the live control panel →</a>
+          <a class="cad-back-link" href="./digital-twin.html">View 3D digital twin</a>
+        </div>
       </section>
 
       <section class="feature-showcase" aria-label="Project prototype details">

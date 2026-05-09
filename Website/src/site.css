@@ -1273,6 +1273,232 @@ h3 {
   line-height: 1.65;
 }
 
+/* ─── Hardware section ─── */
+
+.hardware-section {
+  position: relative;
+  padding: clamp(80px, 10vw, 148px) clamp(20px, 6vw, 88px);
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(46, 190, 202, 0.08), transparent 40%),
+    radial-gradient(ellipse at 100% 100%, rgba(68, 201, 134, 0.06), transparent 45%),
+    linear-gradient(170deg, #061015 0%, #0a1f25 60%, #061015 100%);
+  color: #e9f6f4;
+}
+
+.hardware-section .section-kicker {
+  color: #2ebeca;
+  display: block;
+  margin-bottom: 18px;
+}
+
+.hardware-head {
+  max-width: 760px;
+  margin: 0 auto 56px;
+  text-align: center;
+}
+
+.hardware-head h2 {
+  margin: 0 0 18px;
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.hardware-lead {
+  margin: 0;
+  color: rgba(233, 246, 244, 0.62);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.hardware-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  max-width: 1240px;
+  margin: 0 auto 64px;
+}
+
+.hw-card {
+  position: relative;
+  padding: 26px 24px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  background:
+    linear-gradient(170deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+  backdrop-filter: blur(12px);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.hw-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(46, 190, 202, 0.35);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(46, 190, 202, 0.15);
+}
+
+.hw-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(46, 190, 202, 0.12);
+  border: 1px solid rgba(46, 190, 202, 0.3);
+  color: #2ebeca;
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 14px;
+}
+
+.hw-jetson  .hw-icon { background: rgba(120, 200, 80, 0.12); border-color: rgba(120, 200, 80, 0.35); color: #9bdf68; }
+.hw-arduino .hw-icon { background: rgba(80, 192, 220, 0.12); border-color: rgba(80, 192, 220, 0.35); color: #74c8df; }
+.hw-cam     .hw-icon { background: rgba(160, 130, 255, 0.12); border-color: rgba(160, 130, 255, 0.35); color: #b3a0ff; }
+.hw-gas     .hw-icon { background: rgba(255, 180, 80, 0.12); border-color: rgba(255, 180, 80, 0.35); color: #ffc070; }
+.hw-ldr     .hw-icon { background: rgba(95, 214, 255, 0.12); border-color: rgba(95, 214, 255, 0.35); color: #5fd6ff; }
+.hw-load    .hw-icon { background: rgba(255, 220, 100, 0.12); border-color: rgba(255, 220, 100, 0.35); color: #ffd866; }
+.hw-valve   .hw-icon { background: rgba(255, 100, 100, 0.12); border-color: rgba(255, 100, 100, 0.35); color: #ff8a8a; }
+.hw-pump    .hw-icon { background: rgba(70, 220, 200, 0.12); border-color: rgba(70, 220, 200, 0.35); color: #6be0c8; }
+
+.hw-card h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.hw-role {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #2ebeca;
+}
+
+.hw-card p {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(233, 246, 244, 0.7);
+}
+
+.hw-meta {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hw-meta li {
+  padding: 3px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  font-size: 11px;
+  font-family: ui-monospace, SF Mono, Menlo, monospace;
+  color: rgba(233, 246, 244, 0.65);
+}
+
+/* Architecture flow diagram */
+
+.hw-arch {
+  max-width: 1240px;
+  margin: 0 auto 48px;
+  padding: 32px 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.hw-arch h3 {
+  margin: 0 0 24px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(233, 246, 244, 0.5);
+  text-align: center;
+}
+
+.arch-flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
+.arch-node {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+  padding: 14px 18px;
+  border: 1px solid rgba(46, 190, 202, 0.25);
+  border-radius: 12px;
+  background: rgba(46, 190, 202, 0.06);
+  text-align: center;
+}
+
+.arch-node strong {
+  font-size: 13px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.arch-node span {
+  font-size: 10px;
+  color: rgba(233, 246, 244, 0.5);
+  font-family: ui-monospace, SF Mono, Menlo, monospace;
+  letter-spacing: 0.02em;
+}
+
+.arch-arrow {
+  font-size: 14px;
+  font-weight: 800;
+  color: rgba(46, 190, 202, 0.6);
+  letter-spacing: 0.1em;
+}
+
+.arch-sensors  { border-color: rgba(95, 214, 255, 0.3); background: rgba(95, 214, 255, 0.05); }
+.arch-arduino  { border-color: rgba(120, 200, 80, 0.3); background: rgba(120, 200, 80, 0.05); }
+.arch-jetson   { border-color: rgba(160, 130, 255, 0.3); background: rgba(160, 130, 255, 0.05); }
+.arch-cloud    { border-color: rgba(255, 180, 80, 0.3); background: rgba(255, 180, 80, 0.05); }
+.arch-web      { border-color: rgba(67, 224, 138, 0.3); background: rgba(67, 224, 138, 0.05); }
+
+.hw-cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+.hw-cta .final-link {
+  font-size: 14px;
+  padding: 12px 28px;
+  min-height: 48px;
+}
+
+.hw-cta .cad-back-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  color: rgba(233, 246, 244, 0.85);
+  font-size: 14px;
+  font-weight: 600;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.hw-cta .cad-back-link:hover {
+  border-color: rgba(46, 190, 202, 0.5);
+  background: rgba(46, 190, 202, 0.08);
+}
+
 .cad-section {
   display: grid;
   grid-template-columns: minmax(320px, 1.1fr) minmax(320px, 0.9fr);

@@ -151,12 +151,15 @@ Mirrors the real device behaviour — driven by Firebase live data:
 
 | Layer | Technology |
 |-------|-----------|
-| Website | Next.js (App Router), TypeScript |
-| 3D Simulation | React Three Fiber + @react-three/drei |
-| Cloud DB | Firebase Realtime Database |
+| Website | Vanilla JS + Three.js (no framework, no build step) |
+| 3D Simulation | Three.js r140+ with instanced meshes, OrbitControls |
+| 3D Models | GLB/GLTF (base64-embedded for offline use) |
+| Cloud DB | Firebase Realtime Database (to be wired up) |
 | Embedded AI | NVIDIA Jetson Nano — YOLOv8n (ONNX) or OpenCV |
 | Microcontroller | Arduino Uno/Nano |
-| Styling | TBD (Tailwind CSS recommended) |
+| Hosting | GitHub Pages via GitHub Actions (https://faaz17.github.io/nurdle-dna/) |
+
+**Note:** The site is NOT React/Next.js — it is pure vanilla JS with Three.js vendored locally. No npm, no build step, no node_modules.
 
 ---
 

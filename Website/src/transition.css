@@ -1,0 +1,91 @@
+/* ──────────────────────────────────────────────
+   Shared page-transition overlay
+   Loaded by index.html, live-demo.html, digital-twin.html, cad-model.html
+   ────────────────────────────────────────────── */
+
+.ag-page-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.ag-page-transition.is-active {
+  visibility: visible;
+  pointer-events: all;
+}
+
+.ag-page-transition svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.ag-wave-fill {
+  fill: #051820;
+  transform: translateY(105%);
+  transition: transform 0.85s cubic-bezier(0.85, 0, 0.15, 1);
+  will-change: transform;
+}
+
+.ag-wave-foam {
+  fill: rgba(95, 214, 255, 0.18);
+  transform: translateY(105%);
+  transition: transform 0.85s cubic-bezier(0.85, 0, 0.15, 1) 0.06s;
+  will-change: transform;
+}
+
+.ag-page-transition.is-leaving .ag-wave-fill,
+.ag-page-transition.is-leaving .ag-wave-foam {
+  transform: translateY(0);
+}
+
+.ag-page-transition.is-arriving .ag-wave-fill,
+.ag-page-transition.is-arriving .ag-wave-foam {
+  transform: translateY(-105%);
+  transition: transform 0.85s cubic-bezier(0.85, 0, 0.15, 1);
+}
+
+.ag-transition-loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-family: "Space Grotesk", "Helvetica", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(232, 232, 233, 0.72);
+  opacity: 0;
+  transition: opacity 0.25s ease 0.45s;
+}
+
+.ag-transition-loader::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #44e0c8;
+  box-shadow: 0 0 12px #44e0c8;
+  animation: agLoadPulse 1s ease-in-out infinite;
+}
+
+.ag-page-transition.is-leaving .ag-transition-loader { opacity: 1; }
+
+@keyframes agLoadPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50%      { opacity: 1;   transform: scale(1.15); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-wave-fill, .ag-wave-foam, .ag-transition-loader {
+    transition-duration: 0.12s !important;
+  }
+}

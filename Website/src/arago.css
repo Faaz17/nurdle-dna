@@ -350,209 +350,54 @@ main { z-index: 2; position: relative; }
   }
 }
 
-.ag-chip-wrapper {
+.ag-water-field {
   position: relative;
   width: 100%;
-  max-width: 560px;
+  max-width: 600px;
   aspect-ratio: 1 / 1;
-  transform-style: preserve-3d;
-  animation: chipFloat 7s ease-in-out infinite;
-}
-
-@keyframes chipFloat {
-  0%, 100% { transform: translateY(-8px); }
-  50%      { transform: translateY(8px); }
-}
-
-.ag-chip {
-  position: absolute;
-  inset: 8%;
-  --mx: 0;
-  --my: 0;
-  transform:
-    rotateX(calc(46deg + var(--my) * -5deg))
-    rotateZ(calc(-30deg + var(--mx) * 4deg));
-  transform-style: preserve-3d;
-  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.ag-chip-substrate {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(135deg, #1c2128 0%, #0c0e12 100%);
-  border: 1px solid rgba(180, 200, 220, 0.18);
-  border-radius: 8px;
-  box-shadow:
-    0 60px 120px rgba(0, 0, 0, 0.85),
-    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
   overflow: hidden;
-}
-
-.ag-chip-edge {
-  position: absolute;
-  inset: -2px -2px -2px -2px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0));
-  z-index: -1;
-}
-
-/* Surface micro-grid */
-.ag-chip-grid {
-  position: absolute;
-  inset: 6%;
-  background:
-    repeating-linear-gradient(0deg,
-      rgba(255,255,255,0.02) 0 1px,
-      transparent 1px 18px),
-    repeating-linear-gradient(90deg,
-      rgba(255,255,255,0.02) 0 1px,
-      transparent 1px 18px);
-  border-radius: 4px;
-}
-
-/* Faint trace lines from the core to the edges */
-.ag-chip-traces {
-  position: absolute;
-  inset: 14%;
-  background:
-    linear-gradient(90deg, transparent 0 49.5%, rgba(95, 214, 255, 0.18) 49.5% 50.5%, transparent 50.5%),
-    linear-gradient(0deg,  transparent 0 49.5%, rgba(95, 214, 255, 0.18) 49.5% 50.5%, transparent 50.5%);
-  background-size: 100% 100%;
-  mask:
-    radial-gradient(circle at center, black 22%, transparent 60%);
-  -webkit-mask:
-    radial-gradient(circle at center, black 22%, transparent 60%);
-  opacity: 0.7;
-}
-
-/* Pin contact pads on each side */
-.ag-chip-pads {
-  position: absolute;
-  background-image: repeating-linear-gradient(
-    var(--pin-dir, 90deg),
-    rgba(220, 230, 240, 0.55) 0 5px,
-    rgba(60, 70, 80, 0.4) 5px 8px,
-    transparent 8px 16px
-  );
-}
-
-.ag-chip-pads.top    { top: 1.2%; left: 14%; right: 14%; height: 4%;  --pin-dir: 90deg; }
-.ag-chip-pads.bottom { bottom: 1.2%; left: 14%; right: 14%; height: 4%;  --pin-dir: 90deg; }
-.ag-chip-pads.left   { top: 14%; bottom: 14%; left: 1.2%; width: 4%;  --pin-dir: 0deg; }
-.ag-chip-pads.right  { top: 14%; bottom: 14%; right: 1.2%; width: 4%;  --pin-dir: 0deg; }
-
-/* Inner die layers (silicon stacked squares) */
-.ag-chip-die {
-  position: absolute;
-  top: 22%;
-  left: 22%;
-  right: 22%;
-  bottom: 22%;
-  background:
-    linear-gradient(135deg, #2a3038 0%, #14181d 100%);
-  border: 1px solid rgba(180, 200, 220, 0.22);
-  border-radius: 4px;
-  display: grid;
-  place-items: center;
+  background: radial-gradient(ellipse at 50% 50%, rgba(6, 26, 36, 0.95), rgba(0, 0, 0, 1));
+  border: 1px solid var(--color-line-strong);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    0 6px 16px rgba(0, 0, 0, 0.5);
+    0 50px 100px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 1px rgba(95, 214, 255, 0.06);
+  animation: fieldFloat 8s ease-in-out infinite;
 }
 
-.ag-chip-die-inner {
-  position: relative;
-  width: 78%;
-  height: 78%;
-  background:
-    linear-gradient(135deg,
-      rgba(46, 190, 202, 0.22),
-      rgba(67, 224, 138, 0.14)),
-    linear-gradient(180deg, #0e2a26 0%, #061812 100%);
-  border: 1px solid rgba(46, 190, 202, 0.5);
-  border-radius: 2px;
-  box-shadow:
-    0 0 50px rgba(46, 190, 202, 0.32),
-    inset 0 0 30px rgba(46, 190, 202, 0.18);
-  overflow: hidden;
+@keyframes fieldFloat {
+  0%, 100% { transform: translateY(-6px); }
+  50%      { transform: translateY(6px); }
 }
 
-.ag-chip-die-inner::before {
-  content: "";
+#waterField { width: 100%; height: 100%; display: block; }
+
+.ag-water-overlay {
   position: absolute;
-  inset: 0;
-  background-image:
-    repeating-linear-gradient(0deg,  rgba(255,255,255,0.04) 0 1px, transparent 1px 8px),
-    repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 8px);
-}
-
-.ag-chip-die-core {
-  position: absolute;
-  inset: 18%;
-  background:
-    radial-gradient(circle at center,
-      rgba(67, 224, 138, 0.6),
-      rgba(46, 190, 202, 0.25) 60%,
-      transparent 80%);
-  border-radius: 2px;
-  animation: chipPulse 3.2s ease-in-out infinite;
-}
-
-@keyframes chipPulse {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50%      { opacity: 1;   transform: scale(1.08); }
-}
-
-.ag-chip-label {
-  position: absolute;
-  top: 6%;
-  left: 50%;
-  transform: translateX(-50%);
+  inset: auto 0 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 1rem 1.25rem;
   font-family: var(--font-space);
   font-size: 0.625rem;
   font-weight: 600;
-  letter-spacing: 0.16em;
-  color: var(--color-accent-2);
-  text-shadow: 0 0 10px rgba(46, 190, 202, 0.6);
-  z-index: 2;
-}
-
-.ag-chip-sub {
-  position: absolute;
-  bottom: 6%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--font-space);
-  font-size: 0.5rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  color: rgba(232, 232, 233, 0.5);
-  z-index: 2;
-}
-
-/* Vertical scan line sweeping the chip surface */
-.ag-chip-scan {
-  position: absolute;
-  inset: 0;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.62), transparent);
   pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(95, 214, 255, 0) 30%,
-    rgba(95, 214, 255, 0.20) 50%,
-    rgba(95, 214, 255, 0) 70%,
-    transparent 100%);
-  background-size: 100% 200%;
-  animation: chipScan 4.5s ease-in-out infinite;
-  mix-blend-mode: screen;
 }
 
-@keyframes chipScan {
-  0%   { background-position: 0% 200%; opacity: 0; }
-  20%  { opacity: 1; }
-  80%  { opacity: 1; }
-  100% { background-position: 0% -100%; opacity: 0; }
+.ag-field-label { color: var(--color-accent-2); text-shadow: 0 0 12px rgba(46, 190, 202, 0.5); }
+.ag-field-meta  { color: var(--color-gray); }
+
+.ag-water-overlay::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 1.25rem; right: 1.25rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(46, 190, 202, 0.35), transparent);
 }
 
 .ag-hero-title h1 {
@@ -1335,6 +1180,99 @@ main { z-index: 2; position: relative; }
 
 /* Hide elements from previous theme */
 .demo-section, .team-section { display: none !important; }
+
+/* ─── Ambient bubbles rising in the background ─── */
+
+.ag-bubbles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.ag-bubbles span {
+  position: absolute;
+  bottom: -40px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(95, 214, 255, 0.55), rgba(95, 214, 255, 0));
+  animation: bubbleRise linear infinite;
+}
+
+.ag-bubbles span:nth-child(1) { left: 8%;  animation-duration: 22s; animation-delay: -3s;  width: 4px; height: 4px; }
+.ag-bubbles span:nth-child(2) { left: 22%; animation-duration: 28s; animation-delay: -10s; width: 8px; height: 8px; }
+.ag-bubbles span:nth-child(3) { left: 38%; animation-duration: 19s; animation-delay: -14s; }
+.ag-bubbles span:nth-child(4) { left: 54%; animation-duration: 34s; animation-delay: -2s;  width: 5px; height: 5px; }
+.ag-bubbles span:nth-child(5) { left: 68%; animation-duration: 25s; animation-delay: -18s; width: 7px; height: 7px; }
+.ag-bubbles span:nth-child(6) { left: 80%; animation-duration: 30s; animation-delay: -8s;  }
+.ag-bubbles span:nth-child(7) { left: 90%; animation-duration: 21s; animation-delay: -22s; width: 4px; height: 4px; }
+.ag-bubbles span:nth-child(8) { left: 12%; animation-duration: 26s; animation-delay: -12s; width: 5px; height: 5px; }
+
+@keyframes bubbleRise {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  10%  { opacity: 0.55; }
+  50%  { transform: translateY(-50vh) translateX(12px); }
+  90%  { opacity: 0.35; }
+  100% { transform: translateY(-110vh) translateX(-8px); opacity: 0; }
+}
+
+/* ─── Hardware-card cursor-tracked water-drop ripple ─── */
+
+.hw-card { position: relative; overflow: hidden; }
+
+.hw-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle 220px at var(--rx, 50%) var(--ry, 50%),
+                              rgba(46, 190, 202, 0.10),
+                              transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hw-card:hover::after { opacity: 1; }
+
+.hw-card > * { position: relative; z-index: 1; }
+
+/* ─── Footer sine-wave divider ─── */
+
+.ag-footer-wave {
+  position: relative;
+  z-index: 2;
+  height: 60px;
+  overflow: hidden;
+  border-top: 1px solid var(--color-line);
+}
+
+.ag-footer-wave svg {
+  width: 200%;
+  height: 100%;
+  display: block;
+  animation: wavePan 60s linear infinite;
+}
+
+@keyframes wavePan {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ─── Marquee polish ─── */
+
+.ag-marquee-track { gap: 4.5rem; }
+
+.ag-marquee-item .dot {
+  width: 0.3125rem;
+  height: 0.3125rem;
+  background: var(--color-accent-2);
+  box-shadow: 0 0 6px var(--color-accent-2);
+  border-radius: 50%;
+  transform: none;
+}
 
 /* Reduced motion fallback */
 @media (prefers-reduced-motion: reduce) {

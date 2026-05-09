@@ -6,8 +6,15 @@
     <title>NurdleDNA | Industrial Environmental Firewall</title>
     <link rel="stylesheet" href="./src/site.css">
     <link rel="stylesheet" href="./src/arago.css">
+    <link rel="stylesheet" href="./src/transition.css">
   </head>
   <body>
+
+    <!-- AMBIENT BUBBLES (rise from bottom of viewport) -->
+    <div class="ag-bubbles" aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span>
+    </div>
 
     <!-- TOP NAV -->
     <header class="ag-nav" aria-label="Site navigation">
@@ -60,27 +67,13 @@
             </div>
           </div>
 
-          <!-- Hero chip illustration (CSS/SVG, not WebGL) -->
+          <!-- Hero water+pellet field (Canvas2D, on-theme) -->
           <div class="ag-hero-visual" aria-hidden="true">
-            <div class="ag-chip-wrapper">
-              <div class="ag-chip">
-                <div class="ag-chip-substrate">
-                  <div class="ag-chip-grid"></div>
-                  <div class="ag-chip-traces"></div>
-                  <div class="ag-chip-pads top"></div>
-                  <div class="ag-chip-pads bottom"></div>
-                  <div class="ag-chip-pads left"></div>
-                  <div class="ag-chip-pads right"></div>
-                  <div class="ag-chip-die">
-                    <div class="ag-chip-die-inner">
-                      <div class="ag-chip-die-core"></div>
-                      <span class="ag-chip-label">NRDL-001</span>
-                      <span class="ag-chip-sub">arc-tech v0.4.0</span>
-                    </div>
-                  </div>
-                  <div class="ag-chip-scan"></div>
-                </div>
-                <div class="ag-chip-edge"></div>
+            <div class="ag-water-field">
+              <canvas id="waterField" aria-hidden="true"></canvas>
+              <div class="ag-water-overlay">
+                <span class="ag-field-label">Flow &middot; NURDLE-001</span>
+                <span class="ag-field-meta">Multi-channel sensing &middot; 5 Hz</span>
               </div>
             </div>
           </div>
@@ -460,6 +453,12 @@
       </section>
 
       <!-- FOOTER -->
+      <div class="ag-footer-wave" aria-hidden="true">
+        <svg viewBox="0 0 1200 60" preserveAspectRatio="none">
+          <path d="M0,30 Q150,8 300,30 T600,30 T900,30 T1200,30" fill="none" stroke="rgba(46,190,202,0.32)" stroke-width="1" />
+          <path d="M0,30 Q200,52 400,30 T800,30 T1200,30" fill="none" stroke="rgba(95,214,255,0.18)" stroke-width="1" />
+        </svg>
+      </div>
       <footer class="ag-footer">
         <div class="ag-container">
           <p>© 2026 Arc Tech &middot; Team 2 &middot; ECTE 250</p>
@@ -472,6 +471,7 @@
 
     </main>
 
+    <script src="./src/transition.js" defer></script>
     <script src="./src/arago.js" defer></script>
   </body>
 </html>

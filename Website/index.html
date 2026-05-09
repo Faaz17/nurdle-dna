@@ -61,6 +61,7 @@
                 <span>NRDL-001</span>
                 <span>arc-tech v0.4.0</span>
               </div>
+              <div class="ag-chip-scan"></div>
             </div>
           </div>
         </div>
@@ -68,8 +69,40 @@
         <a class="ag-scroll-cue" href="#intro">Scroll to discover</a>
       </section>
 
+      <!-- MARQUEE ──────────────────────────────────────────── -->
+      <section class="ag-marquee" aria-hidden="true">
+        <div class="ag-marquee-track">
+          <!-- track A -->
+          <span class="ag-marquee-item"><span class="dot"></span>JETSON NANO</span>
+          <span class="ag-marquee-item">YOLOv8n &middot; <span class="accent">94% mAP</span></span>
+          <span class="ag-marquee-item"><span class="dot"></span>ARDUINO UNO</span>
+          <span class="ag-marquee-item">5-state Moore FSM</span>
+          <span class="ag-marquee-item"><span class="dot"></span>MQ-135 / MQ-4</span>
+          <span class="ag-marquee-item"><span class="accent">200 ppm</span> trip</span>
+          <span class="ag-marquee-item"><span class="dot"></span>HX711 &middot; LOAD CELL</span>
+          <span class="ag-marquee-item">24-bit ADC &middot; <span class="accent">±0.1g</span></span>
+          <span class="ag-marquee-item"><span class="dot"></span>MG996R SERVO</span>
+          <span class="ag-marquee-item">closure &lt; <span class="accent">1 second</span></span>
+          <span class="ag-marquee-item"><span class="dot"></span>FIREBASE RTDB</span>
+          <span class="ag-marquee-item">/devices/NURDLE-001</span>
+          <!-- track B duplicate for seamless loop -->
+          <span class="ag-marquee-item"><span class="dot"></span>JETSON NANO</span>
+          <span class="ag-marquee-item">YOLOv8n &middot; <span class="accent">94% mAP</span></span>
+          <span class="ag-marquee-item"><span class="dot"></span>ARDUINO UNO</span>
+          <span class="ag-marquee-item">5-state Moore FSM</span>
+          <span class="ag-marquee-item"><span class="dot"></span>MQ-135 / MQ-4</span>
+          <span class="ag-marquee-item"><span class="accent">200 ppm</span> trip</span>
+          <span class="ag-marquee-item"><span class="dot"></span>HX711 &middot; LOAD CELL</span>
+          <span class="ag-marquee-item">24-bit ADC &middot; <span class="accent">±0.1g</span></span>
+          <span class="ag-marquee-item"><span class="dot"></span>MG996R SERVO</span>
+          <span class="ag-marquee-item">closure &lt; <span class="accent">1 second</span></span>
+          <span class="ag-marquee-item"><span class="dot"></span>FIREBASE RTDB</span>
+          <span class="ag-marquee-item">/devices/NURDLE-001</span>
+        </div>
+      </section>
+
       <!-- INTRO SPOTLIGHT ──────────────────────────────────── -->
-      <section class="ag-spotlight" id="intro">
+      <section class="ag-spotlight" id="intro" data-anim="fade-up">
         <span class="ag-label">Introducing NurdleDNA</span>
         <p class="ag-spot-body">
           Industry is boxed in by the limits of <strong>traditional drain monitoring.</strong>
@@ -81,27 +114,27 @@
       </section>
 
       <!-- STAT STRIP ───────────────────────────────────────── -->
-      <section class="ag-stat-strip" aria-label="Headline metrics">
+      <section class="ag-stat-strip" aria-label="Headline metrics" data-anim-stagger>
         <div class="ag-stat">
           <div class="ag-stat-label">Valve closure</div>
-          <div class="ag-stat-value">&lt; 1<span class="ag-stat-unit">sec</span></div>
+          <div class="ag-stat-value">&lt;&nbsp;<span class="ag-stat-num" data-count="1">0</span><span class="ag-stat-unit">sec</span></div>
         </div>
         <div class="ag-stat">
           <div class="ag-stat-label">Density index</div>
-          <div class="ag-stat-value">72<span class="ag-stat-unit">/ 100</span></div>
+          <div class="ag-stat-value"><span class="ag-stat-num" data-count="72">0</span><span class="ag-stat-unit">/ 100</span></div>
         </div>
         <div class="ag-stat">
           <div class="ag-stat-label">Captured mass</div>
-          <div class="ag-stat-value">18.6<span class="ag-stat-unit">g</span></div>
+          <div class="ag-stat-value"><span class="ag-stat-num" data-count="18.6">0</span><span class="ag-stat-unit">g</span></div>
         </div>
         <div class="ag-stat">
           <div class="ag-stat-label">FSM states</div>
-          <div class="ag-stat-value">5<span class="ag-stat-unit">moore</span></div>
+          <div class="ag-stat-value"><span class="ag-stat-num" data-count="5">0</span><span class="ag-stat-unit">moore</span></div>
         </div>
       </section>
 
       <!-- DETECTION ────────────────────────────────────────── -->
-      <section class="ag-spotlight">
+      <section class="ag-spotlight" data-anim="fade-up">
         <span class="ag-label">Detection</span>
         <div>
           <p class="ag-spot-body">
@@ -119,7 +152,7 @@
       </section>
 
       <!-- CONTAINMENT ──────────────────────────────────────── -->
-      <section class="ag-spotlight">
+      <section class="ag-spotlight" data-anim="fade-up">
         <span class="ag-label">Containment</span>
         <div>
           <p class="ag-spot-body">
@@ -137,7 +170,7 @@
       </section>
 
       <!-- EVIDENCE ─────────────────────────────────────────── -->
-      <section class="ag-spotlight">
+      <section class="ag-spotlight" data-anim="fade-up">
         <span class="ag-label">Evidence</span>
         <div>
           <p class="ag-spot-body">
@@ -155,7 +188,7 @@
       </section>
 
       <!-- REPORTING ────────────────────────────────────────── -->
-      <section class="ag-spotlight">
+      <section class="ag-spotlight" data-anim="fade-up">
         <span class="ag-label">Reporting</span>
         <div>
           <p class="ag-spot-body">
@@ -182,7 +215,7 @@
             Every component below is wired into the FSM and observable in the live demo.
           </p>
         </div>
-        <div class="hardware-grid">
+        <div class="hardware-grid" data-anim-stagger>
           <article class="hw-card hw-jetson">
             <div class="hw-icon" aria-hidden="true">AI</div>
             <h3>NVIDIA Jetson Nano</h3>
@@ -313,7 +346,7 @@
       </section>
 
       <!-- IMPACT SPOTLIGHT ─────────────────────────────────── -->
-      <section class="ag-spotlight">
+      <section class="ag-spotlight" data-anim="fade-up">
         <span class="ag-label">Impact</span>
         <p class="ag-spot-body">
           NurdleDNA <strong>protects the coastline and the balance sheet.</strong> Pellets
@@ -337,7 +370,7 @@
           <p class="section-kicker team-kicker">The people behind it</p>
           <h2 class="team-heading">Arc Tech &mdash; Team 2</h2>
           <p class="team-subtitle">ECTE 250 &middot; University of Wollongong in Dubai</p>
-          <div class="team-grid">
+          <div class="team-grid" data-anim-stagger>
             <div class="team-card">
               <div class="team-avatar" data-initials="MH" style="--c:#2ebeca"></div>
               <strong>Muhammad Haaziq</strong>
@@ -380,5 +413,6 @@
 
     </main>
 
+    <script src="./src/arago.js" defer></script>
   </body>
 </html>

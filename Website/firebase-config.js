@@ -1,22 +1,15 @@
 /*
  * firebase-config.js — NurdleDNA web Firebase credentials
- *
- * HOW TO FILL IN:
- *   1. Go to https://console.firebase.google.com
- *   2. Select your project → Project Settings → General
- *   3. Scroll to "Your apps" → copy the firebaseConfig object
- *   4. Paste the values below and save
- *
- * This file is listed in .gitignore so credentials are never committed.
- * The site falls back to simulation mode when apiKey is still REPLACE_ME.
+ * Project: nurdle-dna (ECTE 250 Team 2 — Arc Tech, UOWD)
  */
 
 window.NURDLE_FIREBASE = {
-  apiKey:            "REPLACE_ME",
-  authDomain:        "REPLACE_ME.firebaseapp.com",
-  databaseURL:       "https://REPLACE_ME-default-rtdb.firebaseio.com",
-  projectId:         "REPLACE_ME",
-  storageBucket:     "REPLACE_ME.appspot.com",
-  messagingSenderId: "REPLACE_ME",
-  appId:             "REPLACE_ME",
+  apiKey:            "AIzaSyB-QMnzLJoCEM9pGhtU1Rlg7qpxlypRIRk",
+  authDomain:        "nurdle-dna.firebaseapp.com",
+  databaseURL:       "https://nurdle-dna-default-rtdb.firebaseio.com",
+  projectId:         "nurdle-dna",
+  storageBucket:     "nurdle-dna.firebasestorage.app",
+  messagingSenderId: "191553323886",
+  appId:             "1:191553323886:web:129530e9db0b1ea349b77f",
+  measurementId:     "G-5NYF6061DC",
 };

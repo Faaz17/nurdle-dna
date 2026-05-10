@@ -27,13 +27,13 @@ COUNT_CRIT = 10   # >= 10 detected nurdles → send CRIT to Arduino
 # Replace REPLACE_ME values after creating the Firebase project.
 # See: https://console.firebase.google.com → Project Settings → General → Web app
 FIREBASE_CONFIG = {
-    "apiKey":            "REPLACE_ME",
-    "authDomain":        "REPLACE_ME.firebaseapp.com",
-    "databaseURL":       "https://REPLACE_ME-default-rtdb.firebaseio.com",
-    "projectId":         "REPLACE_ME",
-    "storageBucket":     "REPLACE_ME.appspot.com",
-    "messagingSenderId": "REPLACE_ME",
-    "appId":             "REPLACE_ME",
+    "apiKey":            "AIzaSyB-QMnzLJoCEM9pGhtU1Rlg7qpxlypRIRk",
+    "authDomain":        "nurdle-dna.firebaseapp.com",
+    "databaseURL":       "https://nurdle-dna-default-rtdb.firebaseio.com",
+    "projectId":         "nurdle-dna",
+    "storageBucket":     "nurdle-dna.firebasestorage.app",
+    "messagingSenderId": "191553323886",
+    "appId":             "1:191553323886:web:129530e9db0b1ea349b77f",
 }
 
 DEVICE_ID = "NURDLE-001"

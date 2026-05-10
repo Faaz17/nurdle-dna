@@ -1,0 +1,8 @@
+# NurdleDNA Jetson Nano — Python dependencies
+# Install with: pip3 install -r requirements.txt
+
+ultralytics>=8.0.0        # YOLOv8 inference (includes torch, torchvision)
+pyrebase4>=4.7.1          # Firebase Realtime Database client
+pyserial>=3.5             # Arduino serial communication
+opencv-python>=4.8.0      # Camera capture + OpenCV fallback detection
+numpy>=1.24.0             # Array ops (pulled in by ultralytics/opencv)

@@ -23,6 +23,14 @@ Backup/
 # *.gltf
 # *.glb
 
+# Firebase credentials — fill in firebase-config.js locally
+# The template (REPLACE_ME) is safe to commit; real creds must NOT be
+jetson/serviceAccountKey.json
+jetson/config_local.py
+
+# Jetson model weights
+jetson/models/
+
 # OS junk
 .DS_Store
 Thumbs.db

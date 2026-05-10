@@ -1,0 +1,10 @@
+# Never commit real credentials or large model weights
+serviceAccountKey.json
+config_local.py
+*.pt
+*.onnx
+*.engine
+__pycache__/
+*.pyc
+.env
+models/

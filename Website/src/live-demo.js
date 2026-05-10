@@ -376,7 +376,6 @@
 
   // boot log
   logEvent('info', 'Power-up — running self test');
-  logEvent('info', 'Connected to Firebase (simulated)');
   renderState();
 
   // tick loop (5 Hz)
@@ -390,4 +389,89 @@
 
   // RAF for smooth canvas redraws (graph reflow on resize)
   window.addEventListener('resize', renderSensors);
+
+  // ────────────────────────────────────────────────────────────
+  // Firebase realtime integration
+  // Falls back to simulation when credentials are REPLACE_ME or
+  // the SDK fails to load (e.g. offline, blocked by firewall).
+  // ────────────────────────────────────────────────────────────
+
+  (function initFirebase() {
+    const cfg = window.NURDLE_FIREBASE;
+    if (!cfg || !window.firebase || cfg.apiKey === 'REPLACE_ME') {
+      // Stay in simulation mode
+      logEvent('info', 'Simulation mode — fill in firebase-config.js to go live');
+      return;
+    }
+
+    let fbApp;
+    try {
+      fbApp = firebase.apps.length
+        ? firebase.apps[0]
+        : firebase.initializeApp(cfg);
+    } catch (e) {
+      logEvent('warn', 'Firebase init failed — simulation mode active');
+      return;
+    }
+
+    const db       = firebase.database(fbApp);
+    const devRef   = db.ref('devices/NURDLE-001');
+    const evtRef   = db.ref('events');
+
+    // ── Connection state indicator ──────────────────────────
+    db.ref('.info/connected').on('value', (snap) => {
+      const live = !!snap.val();
+      if (dom.netLed)   dom.netLed.classList.toggle('is-live', live);
+      if (dom.netLabel) dom.netLabel.textContent = live ? 'LIVE' : 'RECONNECTING';
+      if (live) logEvent('ok', 'Firebase connected — live data active');
+    });
+
+    // ── Device snapshot listener ────────────────────────────
+    devRef.on('value', (snap) => {
+      const d = snap.val();
+      if (!d) return;
+
+      // Map FSM state string → sim state key
+      const fsmMap = { S0: 'S0', S1: 'S1', S2: 'S2', S3: 'S3', S4: 'S4' };
+      const nextState = fsmMap[d.fsm_state] || 'S1';
+
+      // Pause the auto-loop while live data is flowing
+      sim.autoMode = false;
+      if (dom.autoMode) dom.autoMode.checked = false;
+
+      // Inject real sensor readings into the sim object
+      if (d.ldr     !== undefined) sim.sensors.ldr    = d.ldr;
+      if (d.gas_ppm !== undefined) sim.sensors.gas    = d.gas_ppm;
+      if (d.ai_count !== undefined) sim.sensors.pellet = d.ai_count;
+      if (d.load_g  !== undefined) sim.sensors.mass   = d.load_g;
+
+      // FSM transition
+      if (nextState === 'S3') {
+        sim.alarmLatched = true;
+      } else if (sim.alarmLatched && nextState === 'S1') {
+        sim.alarmLatched = false;
+      }
+      setState(nextState, 'Firebase live update');
+
+      // Update last-sync timestamp
+      if (dom.lastSync && d.timestamp) {
+        const t = new Date(d.timestamp);
+        dom.lastSync.textContent = t.toLocaleTimeString();
+      }
+
+      renderSensors();
+    });
+
+    // ── Recent events listener (last 10) ───────────────────
+    evtRef.limitToLast(10).on('child_added', (snap) => {
+      const e = snap.val();
+      if (!e) return;
+      const t = e.timestamp ? new Date(e.timestamp).toLocaleTimeString() : '—';
+      logEvent('crit',
+        `[FIREBASE] ALARM @ ${t} — density ${e.density_index ?? '?'} · ${e.ai_count ?? '?'} nurdles · ${e.load_g ?? '?'}g`
+      );
+    });
+
+    logEvent('info', 'Firebase listener attached — waiting for device data');
+  })();
 })();

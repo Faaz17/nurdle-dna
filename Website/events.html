@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NurdleDNA | Event Log</title>
+    <meta name="description" content="Audit-grade alarm event log for NurdleDNA — every contamination and gas-leak event recorded in Firebase with timestamp, density index, and captured mass.">
+    <link rel="stylesheet" href="./src/live-demo.css">
+    <link rel="stylesheet" href="./src/events.css">
+    <link rel="stylesheet" href="./src/transition.css">
+  </head>
+  <body class="demo-page">
+
+    <header class="demo-header" aria-label="Site navigation">
+      <a class="demo-brand" href="./index.html">
+        <span class="brand-mark">N</span>
+        <span>NurdleDNA</span>
+      </a>
+      <nav class="demo-nav" aria-label="Primary">
+        <a href="./index.html">Home</a>
+        <a href="./digital-twin.html">3D Twin</a>
+        <a href="./live-demo.html">Live Demo</a>
+        <a href="./events.html" aria-current="page">Event Log</a>
+        <a href="./cad-model.html">CAD</a>
+      </nav>
+      <div class="demo-net">
+        <span class="net-led" id="netLed"></span>
+        <span id="netLabel">CONNECTING</span>
+      </div>
+    </header>
+
+    <main class="ev-main">
+
+      <!-- Page header -->
+      <section class="ev-hero">
+        <div class="ev-hero-text">
+          <p class="kicker">Audit-grade record</p>
+          <h1>Event Log</h1>
+          <p class="lead">Every alarm, gas leak, and contamination event detected by NurdleDNA — logged immutably to Firebase with sensor readings, density index, and captured mass.</p>
+        </div>
+        <div class="ev-hero-actions">
+          <button class="ev-btn ev-btn-primary" id="btnExport" disabled>
+            Export CSV
+            <span class="ev-btn-icon">↓</span>
+          </button>
+          <button class="ev-btn" id="btnRefresh">
+            Refresh
+            <span class="ev-btn-icon">↻</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Stats bar -->
+      <section class="ev-stats" aria-label="Summary statistics">
+        <article class="ev-stat">
+          <span class="ev-stat-value" id="statTotal">—</span>
+          <span class="ev-stat-label">Total events</span>
+        </article>
+        <article class="ev-stat">
+          <span class="ev-stat-value" id="statLastAlarm">—</span>
+          <span class="ev-stat-label">Last alarm</span>
+        </article>
+        <article class="ev-stat">
+          <span class="ev-stat-value" id="statMaxDensity">—</span>
+          <span class="ev-stat-label">Peak density index</span>
+        </article>
+        <article class="ev-stat">
+          <span class="ev-stat-value" id="statTotalGrams">—</span>
+          <span class="ev-stat-label">Total grams captured</span>
+        </article>
+        <article class="ev-stat">
+          <span class="ev-stat-value" id="statDevice">NURDLE-001</span>
+          <span class="ev-stat-label">Device ID</span>
+        </article>
+      </section>
+
+      <!-- Filter bar -->
+      <div class="ev-filters" role="search" aria-label="Filter events">
+        <input class="ev-search" id="searchInput" type="search"
+               placeholder="Search by type, FSM state, bay…" aria-label="Search events">
+        <div class="ev-filter-chips" role="group" aria-label="Filter by type">
+          <button class="ev-chip active" data-filter="all">All</button>
+          <button class="ev-chip" data-filter="ALARM">Alarm</button>
+          <button class="ev-chip" data-filter="WARN">Warn</button>
+        </div>
+        <select class="ev-select" id="sortSelect" aria-label="Sort order">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="density">Highest density</option>
+          <option value="mass">Most mass</option>
+        </select>
+      </div>
+
+      <!-- Events table -->
+      <section class="ev-table-wrap" aria-label="Event records">
+        <div class="ev-loading" id="evLoading" aria-live="polite">
+          <span class="ev-spinner"></span>
+          Connecting to Firebase…
+        </div>
+
+        <div class="ev-empty" id="evEmpty" hidden>
+          <p>No events recorded yet.</p>
+          <p class="ev-empty-sub">Events appear here automatically once the device logs an alarm to Firebase.</p>
+        </div>
+
+        <table class="ev-table" id="evTable" hidden aria-label="Alarm event log">
+          <thead>
+            <tr>
+              <th scope="col">Timestamp</th>
+              <th scope="col">Type</th>
+              <th scope="col">FSM</th>
+              <th scope="col">Bay</th>
+              <th scope="col">Density Index</th>
+              <th scope="col">Gas (ppm)</th>
+              <th scope="col">Mass (g)</th>
+              <th scope="col">AI Count</th>
+            </tr>
+          </thead>
+          <tbody id="evBody"></tbody>
+        </table>
+      </section>
+
+      <p class="ev-footer-note">
+        Data source: Firebase Realtime Database &middot; /events &middot;
+        Device <strong>NURDLE-001</strong> &middot; Bay <strong>BAY-1</strong>
+      </p>
+
+    </main>
+
+    <!-- Firebase SDK (compat v9) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="./firebase-config.js"></script>
+    <script src="./src/events.js"></script>
+    <script src="./src/transition.js" defer></script>
+  </body>
+</html>

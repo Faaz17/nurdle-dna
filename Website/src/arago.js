@@ -422,4 +422,28 @@
       card.style.setProperty('--ry', ((e.clientY - r.top)  / r.height * 100) + '%');
     });
   });
+
+  // ──────────────────────────────────────────────
+  // 11. Mobile hamburger menu
+  // ──────────────────────────────────────────────
+
+  const menuBtn = document.querySelector('.ag-menu-btn');
+  const mobileMenu = document.getElementById('ag-mobile-menu');
+  const agNav = document.querySelector('.ag-nav');
+
+  if (menuBtn && agNav) {
+    menuBtn.addEventListener('click', () => {
+      const isOpen = agNav.classList.toggle('is-menu-open');
+      menuBtn.setAttribute('aria-expanded', String(isOpen));
+      if (mobileMenu) mobileMenu.setAttribute('aria-hidden', String(!isOpen));
+    });
+
+    document.querySelectorAll('.ag-mobile-link').forEach((link) => {
+      link.addEventListener('click', () => {
+        agNav.classList.remove('is-menu-open');
+        menuBtn.setAttribute('aria-expanded', 'false');
+        if (mobileMenu) mobileMenu.setAttribute('aria-hidden', 'true');
+      });
+    });
+  }
 })();

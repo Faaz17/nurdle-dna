@@ -20,9 +20,12 @@ from pathlib import Path
 
 
 # ─── Config ──────────────────────────────────────────────────────
-ROBOFLOW_WORKSPACE = "brad-dwyer"           # Roboflow public workspace
-ROBOFLOW_PROJECT   = "microplastics-iezxj"  # Microplastics pellet dataset
-ROBOFLOW_VERSION   = 2                       # Dataset version
+# Pick a dataset from https://universe.roboflow.com (search: "nurdle",
+# "microplastic", "plastic pellet") and set these three values from the
+# project URL: roboflow.com/<WORKSPACE>/<PROJECT>/<VERSION>
+ROBOFLOW_WORKSPACE = "REPLACE_WITH_WORKSPACE"   # e.g. "my-workspace"
+ROBOFLOW_PROJECT   = "REPLACE_WITH_PROJECT"     # e.g. "nurdles-abcde"
+ROBOFLOW_VERSION   = 1                          # dataset version number
 DATASET_FORMAT     = "yolov8"
 
 MODEL_BASE     = "yolov8n.pt"   # nano — fastest, runs on Jetson
@@ -39,6 +42,13 @@ def install_deps():
 
 
 def download_dataset(api_key: str) -> str:
+    if "REPLACE_WITH" in ROBOFLOW_WORKSPACE or "REPLACE_WITH" in ROBOFLOW_PROJECT:
+        raise SystemExit(
+            "\n[dataset] ERROR: ROBOFLOW_WORKSPACE / ROBOFLOW_PROJECT not set.\n"
+            "  1. Browse https://universe.roboflow.com — search 'nurdle' or 'microplastic'\n"
+            "  2. Open a project — copy the URL: roboflow.com/<WORKSPACE>/<PROJECT>/<VERSION>\n"
+            "  3. Paste those three values at the top of train.py\n"
+        )
     from roboflow import Roboflow
     print(f"\n[dataset] Downloading from Roboflow: {ROBOFLOW_PROJECT} v{ROBOFLOW_VERSION}")
     rf      = Roboflow(api_key=api_key)
@@ -76,7 +86,13 @@ def train(dataset_path: str):
 
     best_weights = Path("runs/detect/nurdle-yolov8n/weights/best.pt")
     print(f"\n[train] Done. Best weights: {best_weights}")
-    print(f"[train] mAP50: {results.results_dict.get('metrics/mAP50(B)', '?'):.3f}")
+
+    map50 = results.results_dict.get("metrics/mAP50(B)")
+    if isinstance(map50, (int, float)):
+        print(f"[train] mAP50: {map50:.3f}")
+    else:
+        print("[train] mAP50: (not reported — check runs/detect/.../results.csv)")
+
     return best_weights
 
 

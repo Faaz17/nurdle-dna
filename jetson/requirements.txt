@@ -1,7 +1,16 @@
 # NurdleDNA Jetson Nano — Python dependencies
 # Install with: pip3 install -r requirements.txt
+#
+# JETSON NANO (original, not Orin) special note:
+#   The torch/torchvision/ultralytics stack does NOT install cleanly via pip
+#   on Jetson Nano with JetPack 4.x (Python 3.6/3.8). Use the lightweight
+#   ONNX-only path instead — see README.md "Jetson Nano install".
+#   Lightweight install:  pip3 install pyrebase4 pyserial opencv-python onnxruntime
+#
+# DESKTOP / Jetson Orin / cloud (training + full inference):
 
-ultralytics>=8.0.0        # YOLOv8 inference (includes torch, torchvision)
+ultralytics>=8.0.0        # YOLOv8 train + inference (pulls in torch, torchvision)
+onnxruntime>=1.16.0       # REQUIRED to actually run the .onnx model
 pyrebase4>=4.7.1          # Firebase Realtime Database client
 pyserial>=3.5             # Arduino serial communication
 opencv-python>=4.8.0      # Camera capture + OpenCV fallback detection

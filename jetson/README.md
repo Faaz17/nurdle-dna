@@ -10,8 +10,21 @@ Runs on the NVIDIA Jetson Nano. Handles AI vision, serial comms with the Arduino
 # Clone repo on Jetson
 git clone https://github.com/Faaz17/nurdle-dna.git
 cd nurdle-dna/jetson
+```
 
-# Install Python dependencies
+### Jetson Nano (original — 4GB)
+The standard Ultralytics/torch stack does NOT install cleanly on Jetson Nano.
+Use the lightweight install instead:
+
+```bash
+pip3 install pyrebase4 pyserial opencv-python onnxruntime
+```
+
+The vision module will use the ONNX model if present (fast), or fall back
+to the built-in OpenCV HSV detector (no model needed).
+
+### Jetson Orin / desktop / cloud
+```bash
 pip3 install -r requirements.txt
 ```
 

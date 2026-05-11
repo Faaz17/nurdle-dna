@@ -30,7 +30,7 @@ class CloudPublisher:
         self._last_heartbeat   = 0.0
         self._last_status      = "OK"
 
-        if "REPLACE_ME" in FIREBASE_CONFIG.get("apiKey", "REPLACE_ME"):
+        if FIREBASE_CONFIG.get("apiKey", "REPLACE_ME") == "REPLACE_ME":
             print("[cloud] Firebase not configured — running offline (fill in config.py)")
             return
 
@@ -111,12 +111,18 @@ class CloudPublisher:
 
     # ─── Firebase writes ─────────────────────────────────────────
 
+    _first_publish_logged = False
+
     def _publish_device(self, payload: dict):
         if not self._db:
             _print_offline(payload)
             return
         try:
             self._db.child("devices").child(DEVICE_ID).set(payload)
+            if not self._first_publish_logged:
+                print(f"[cloud] First publish OK → {payload['status']} "
+                      f"(FSM={payload['fsm_state']})")
+                self._first_publish_logged = True
         except Exception as exc:
             print("[cloud] Publish error:", exc)
 

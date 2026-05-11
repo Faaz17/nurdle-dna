@@ -19,6 +19,16 @@
  *   - Wire           (built-in)
  *   - LiquidCrystal_I2C  by Frank de Brabander
  *   - HX711          by Bogdan Necula / olkal
+ *
+ * Hardware notes:
+ *   - LCD I2C address: most cheap backpacks are 0x27, but PCF8574A chips
+ *     use 0x3F. If the LCD stays blank, change LCD_ADDR below to 0x3F.
+ *   - Timer conflict: tone() and analogWrite(pin 3) share Timer 2 on Uno.
+ *     We only ever set red LED to 0 or 255, so PWM-collapse is harmless,
+ *     but don't introduce mid-range values on pin 3 while buzzer is active.
+ *   - HX711 SCALE_FACTOR must be calibrated with a known weight. The 420.0
+ *     default is a starting point only — see calibration procedure in
+ *     Deliverable 5 report.
  */
 
 #include <Servo.h>
@@ -40,13 +50,14 @@
 #define HX711_CLK     10
 
 // ─── Thresholds ──────────────────────────────────────────────────
-#define LDR_WARN_THRESH   600     // raw ADC — lower = cloudier water
-#define LDR_CRIT_THRESH   750
-#define GAS_WARN_THRESH   300     // raw ADC (~100 ppm equivalent)
-#define GAS_CRIT_THRESH   600     // raw ADC (~200 ppm equivalent)
+#define LDR_WARN_THRESH   600     // raw ADC (0-1023) — lower = cloudier water
+#define LDR_CRIT_THRESH   750     // raw ADC
+#define GAS_WARN_THRESH   300     // raw ADC — calibrate to your MQ-135 R0 in clean air
+#define GAS_CRIT_THRESH   600     // raw ADC — see datasheet ppm conversion curve
 #define DEBOUNCE_HITS     3       // consecutive readings before FSM transition
-#define SCALE_FACTOR      420.0   // HX711 calibration — tune on breadboard
+#define SCALE_FACTOR      420.0   // HX711 calibration — TUNE with known weight on breadboard
 #define TARE_DELAY_MS     3000
+#define LCD_ADDR          0x27    // try 0x3F if your LCD stays blank
 
 // ─── Timing ──────────────────────────────────────────────────────
 #define SENSOR_INTERVAL_MS 100    // read sensors every 100 ms
@@ -62,7 +73,7 @@ enum State { S0_INIT, S1_SYSOK, S2_CAUTION, S3_ALARM, S4_RESET };
 
 // ─── Globals ─────────────────────────────────────────────────────
 Servo valve;
-LiquidCrystal_I2C lcd(0x27, 16, 2);
+LiquidCrystal_I2C lcd(LCD_ADDR, 16, 2);
 HX711 scale;
 
 State   currentState  = S0_INIT;
@@ -112,8 +123,9 @@ void setup() {
   // LEDs — all white during S0
   setRGB(255, 255, 255);
 
-  // HX711 tare on boot
+  // HX711 calibrate + tare on boot
   scale.begin(HX711_DOUT, HX711_CLK);
+  scale.set_scale(SCALE_FACTOR);     // converts raw counts to grams
   lcdPrint("NurdleDNA v1.0  ", "Taring scale... ");
   delay(TARE_DELAY_MS);
   if (scale.is_ready()) scale.tare();

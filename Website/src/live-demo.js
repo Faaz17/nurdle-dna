@@ -17,6 +17,8 @@
     state: 'S0',
     autoMode: true,
     alarmLatched: false,
+    liveMode: false,               // true once Firebase pushes real device data
+    lastFirebaseUpdate: 0,         // performance.now() timestamp of latest Firebase msg
     boot: 0,                       // 0 → 1 over a few seconds
     spillImpulse: 0,               // 0 → 1 when triggered, decays
     gasImpulse: 0,
@@ -148,6 +150,22 @@
       if (sim.boot >= 1 && sim.state === 'S0') setState('S1', 'self-test complete');
     }
 
+    // ── If live Firebase data arrived recently, skip ALL simulated
+    //    sensor noise and FSM auto-eval. The Firebase listener is
+    //    authoritative; we only need to push history and re-render.
+    const liveStale = (performance.now() - sim.lastFirebaseUpdate) > 8000;
+    if (sim.liveMode && !liveStale) {
+      pushHistory();
+      renderSensors();
+      updateUptime();
+      return;
+    }
+    if (sim.liveMode && liveStale) {
+      // Lost contact with the device — fall back to simulation
+      sim.liveMode = false;
+      logEvent('warn', 'Live data stalled > 8s — reverting to simulation');
+    }
+
     // Decay impulses
     sim.spillImpulse  *= Math.pow(0.55, dt);
     sim.gasImpulse    *= Math.pow(0.6, dt);
@@ -202,7 +220,10 @@
       dom.lastSync.textContent = nowHHMMSS();
     }
 
-    // Uptime
+    updateUptime();
+  }
+
+  function updateUptime() {
     const upMs = performance.now() - sim.bootStart;
     const h = Math.floor(upMs / 3.6e6);
     const m = Math.floor((upMs % 3.6e6) / 60000);
@@ -431,6 +452,13 @@
       const d = snap.val();
       if (!d) return;
 
+      // First device update → flip into live mode (pauses simulation)
+      if (!sim.liveMode) {
+        logEvent('ok', 'Live device data received — simulation paused');
+      }
+      sim.liveMode = true;
+      sim.lastFirebaseUpdate = performance.now();
+
       // Map FSM state string → sim state key
       const fsmMap = { S0: 'S0', S1: 'S1', S2: 'S2', S3: 'S3', S4: 'S4' };
       const nextState = fsmMap[d.fsm_state] || 'S1';
@@ -439,7 +467,8 @@
       sim.autoMode = false;
       if (dom.autoMode) dom.autoMode.checked = false;
 
-      // Inject real sensor readings into the sim object
+      // Inject real sensor readings (these are now authoritative — the
+      // tick loop will skip its sine-wave overwrite while liveMode is on)
       if (d.ldr     !== undefined) sim.sensors.ldr    = d.ldr;
       if (d.gas_ppm !== undefined) sim.sensors.gas    = d.gas_ppm;
       if (d.ai_count !== undefined) sim.sensors.pellet = d.ai_count;

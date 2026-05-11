@@ -86,7 +86,11 @@ class SerialBridge:
         buf = ""
         while self._running:
             if not self.connected:
-                time.sleep(0.5)
+                # Keep retrying connection forever — Arduino may have been
+                # unplugged then replugged (USB enumeration takes a few s).
+                self._attempt_reconnect()
+                if not self.connected:
+                    time.sleep(5)
                 continue
             try:
                 waiting = self._serial.in_waiting
@@ -97,11 +101,10 @@ class SerialBridge:
                         self._parse(line.strip())
                 else:
                     time.sleep(0.02)
-            except serial.SerialException as exc:
+            except (serial.SerialException, OSError) as exc:
                 print("[serial] Read error:", exc)
                 self.connected = False
-                time.sleep(2)
-                self._attempt_reconnect()
+                # next loop iteration will trigger _attempt_reconnect
 
     def _parse(self, line: str):
         if not line:
@@ -116,16 +119,15 @@ class SerialBridge:
             pass    # silently skip malformed lines
 
     def _attempt_reconnect(self):
-        print("[serial] Attempting reconnect...")
         try:
             if self._serial and self._serial.is_open:
                 self._serial.close()
             self._serial = serial.Serial(
                 SERIAL_PORT, SERIAL_BAUD, timeout=SERIAL_TIMEOUT
             )
-            time.sleep(2)
+            time.sleep(2)   # wait for Arduino bootloader
             self.connected = True
-            print("[serial] Reconnected")
-        except serial.SerialException:
-            print("[serial] Reconnect failed — retrying in 5 s")
-            time.sleep(5)
+            print(f"[serial] (Re)connected: {SERIAL_PORT}")
+        except (serial.SerialException, OSError):
+            # quiet — printed once already on initial failure
+            pass

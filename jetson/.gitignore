@@ -1,10 +1,11 @@
-# Never commit real credentials or large model weights
+# Never commit real credentials
 serviceAccountKey.json
 config_local.py
-*.pt
-*.onnx
-*.engine
+.env
 __pycache__/
 *.pyc
-.env
-models/
+
+# Large training weights (the small ONNX deployment model IS committed
+# explicitly via `git add -f` so `git clone` brings everything needed)
+*.pt
+*.engine

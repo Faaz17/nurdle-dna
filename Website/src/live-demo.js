@@ -163,6 +163,8 @@
     if (sim.liveMode && liveStale) {
       // Lost contact with the device — fall back to simulation
       sim.liveMode = false;
+      if (dom.netLed)   dom.netLed.classList.remove('is-live');
+      if (dom.netLabel) dom.netLabel.textContent = 'SIMULATED';
       logEvent('warn', 'Live data stalled > 8s — reverting to simulation');
     }
 
@@ -439,12 +441,14 @@
     const devRef   = db.ref('devices/NURDLE-001');
     const evtRef   = db.ref('events');
 
-    // ── Connection state indicator ──────────────────────────
+    // ── Firebase reachability (logged, but does NOT drive netLed) ──
+    // The netLed/netLabel are driven by actual device data freshness
+    // below — Firebase being reachable just means the browser has
+    // internet, not that a real device is publishing.
     db.ref('.info/connected').on('value', (snap) => {
-      const live = !!snap.val();
-      if (dom.netLed)   dom.netLed.classList.toggle('is-live', live);
-      if (dom.netLabel) dom.netLabel.textContent = live ? 'LIVE' : 'RECONNECTING';
-      if (live) logEvent('ok', 'Firebase connected — live data active');
+      if (snap.val()) {
+        logEvent('info', 'Firebase reachable — waiting for device data');
+      }
     });
 
     // ── Device snapshot listener ────────────────────────────
@@ -458,6 +462,10 @@
       }
       sim.liveMode = true;
       sim.lastFirebaseUpdate = performance.now();
+
+      // Drive the LIVE indicator from real device data
+      if (dom.netLed)   dom.netLed.classList.add('is-live');
+      if (dom.netLabel) dom.netLabel.textContent = 'LIVE';
 
       // Map FSM state string → sim state key
       const fsmMap = { S0: 'S0', S1: 'S1', S2: 'S2', S3: 'S3', S4: 'S4' };

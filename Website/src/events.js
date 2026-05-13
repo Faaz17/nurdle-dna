@@ -171,13 +171,31 @@
 
     const db     = firebase.database(app);
     const evtRef = db.ref('events');
+    const devRef = db.ref('devices/NURDLE-001');
 
-    // Connection indicator
-    db.ref('.info/connected').on('value', (snap) => {
-      const live = !!snap.val();
-      dom.netLed.classList.toggle('is-live', live);
-      dom.netLabel.textContent = live ? 'LIVE' : 'RECONNECTING';
+    // ── LIVE indicator driven by actual device data freshness ───
+    // (NOT by .info/connected, which only checks if the browser
+    //  can reach Firebase. A device might be down even though we
+    //  can read /events history.)
+    let lastDeviceUpdate = 0;
+
+    devRef.on('value', (snap) => {
+      if (snap.val()) {
+        lastDeviceUpdate = performance.now();
+        dom.netLed.classList.add('is-live');
+        dom.netLabel.textContent = 'LIVE';
+      }
     });
+
+    // Check every 3s — if no device data within last 15s, show OFFLINE
+    setInterval(() => {
+      const stale = lastDeviceUpdate === 0
+                 || (performance.now() - lastDeviceUpdate) > 15000;
+      if (stale) {
+        dom.netLed.classList.remove('is-live');
+        dom.netLabel.textContent = lastDeviceUpdate === 0 ? 'NO DEVICE' : 'OFFLINE';
+      }
+    }, 3000);
 
     // Load all events once, then listen for new ones
     evtRef.orderByChild('timestamp').on('value', (snap) => {

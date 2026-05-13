@@ -8,9 +8,18 @@ SERIAL_BAUD    = 115200
 SERIAL_TIMEOUT = 1.0              # seconds
 
 # ─── Camera ──────────────────────────────────────────────────────
-# USB webcam: CAMERA_INDEX = 0
-# Jetson CSI cam (IMX219): CAMERA_INDEX = "nvarguscamerasrc ! ..."
+# Default: USB webcam (/dev/video0 on Jetson, or laptop's built-in cam)
 CAMERA_INDEX = 0
+
+# Fallback for Jetson CSI camera (IMX219). Uncomment if you swap cameras:
+# CAMERA_INDEX = (
+#     "nvarguscamerasrc sensor-id=0 ! "
+#     "video/x-raw(memory:NVMM), width=1280, height=720, framerate=30/1 ! "
+#     "nvvidconv flip-method=0 ! "
+#     "video/x-raw, format=BGRx ! "
+#     "videoconvert ! video/x-raw, format=BGR ! "
+#     "appsink drop=true sync=false"
+# )
 
 # ─── YOLOv8 model ────────────────────────────────────────────────
 # Path relative to jetson/ directory. Set to None to use OpenCV fallback.

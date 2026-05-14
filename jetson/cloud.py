@@ -8,9 +8,15 @@ Writes to two paths:
 Gracefully degrades if Firebase is not configured or unavailable.
 """
 
+import collections
+import collections.abc
 import threading
 import time
 from datetime import datetime, timezone
+
+# Python 3.10+ removed collections.MutableMapping — pyrebase still uses the old path
+if not hasattr(collections, "MutableMapping"):
+    collections.MutableMapping = collections.abc.MutableMapping
 
 from config import FIREBASE_CONFIG, DEVICE_ID, BAY_ID, HEARTBEAT_INTERVAL
 

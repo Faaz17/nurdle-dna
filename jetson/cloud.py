@@ -14,9 +14,11 @@ import threading
 import time
 from datetime import datetime, timezone
 
-# Python 3.10+ removed collections.MutableMapping — pyrebase still uses the old path
-if not hasattr(collections, "MutableMapping"):
-    collections.MutableMapping = collections.abc.MutableMapping
+# Python 3.10+ moved abc classes out of collections — patch all that pyrebase needs
+for _name in ("Mapping", "MutableMapping", "Callable", "Sequence", "MutableSequence",
+              "Set", "MutableSet", "Iterable", "Iterator"):
+    if not hasattr(collections, _name):
+        setattr(collections, _name, getattr(collections.abc, _name))
 
 from config import FIREBASE_CONFIG, DEVICE_ID, BAY_ID, HEARTBEAT_INTERVAL
 

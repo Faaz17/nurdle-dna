@@ -213,9 +213,9 @@ class VisionAgent:
             area = cv2.contourArea(c)
             if area < 30:
                 continue
-            # Each ~600 px² counts as one pellet — a full A4 page in view
-            # registers as ~15-25 detections instead of just 1.
-            n = max(1, int(area // 600))
+            # Each ~1200 px² counts as one pellet — a full A4 page in view
+            # registers as ~15-20 detections instead of just 1.
+            n = max(1, int(area // 1200))
             count += n
             pellets.append((c, n))
 

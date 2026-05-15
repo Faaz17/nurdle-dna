@@ -231,6 +231,10 @@ class VisionAgent:
                         HOLD_CLEAR)
             state = candidate if held >= required else self.state
 
+            # Draw the smoothed count overlay so the camera feed shows the
+            # SAME number as the website (no more raw vs smoothed mismatch).
+            _draw_count_overlay(annotated, display_count)
+
             with self._lock:
                 self.count      = display_count
                 self.confidence = conf
@@ -292,7 +296,6 @@ class VisionAgent:
         _draw_roi_brackets(annotated, roi_x1, roi_y1, roi_x2, roi_y2)
 
         if len(indices) == 0:
-            _draw_count_overlay(annotated, 0)
             return 0, 0.0, annotated
 
         indices = np.array(indices).flatten()
@@ -309,7 +312,6 @@ class VisionAgent:
         if not kept:
             with self._lock:
                 self.breakdown = {}
-            _draw_count_overlay(annotated, 0)
             return 0, 0.0, annotated
 
         count = len(kept)
@@ -335,7 +337,8 @@ class VisionAgent:
             cv2.rectangle(annotated, (x1i, y1i), (x2i, y2i), _TEAL, 2, cv2.LINE_AA)
             _draw_label_pill(annotated, x1i, y1i, f"{label} {confs_k[i]:.2f}")
 
-        _draw_count_overlay(annotated, count)
+        # Note: count overlay is drawn in _loop with the *smoothed* count so
+        # the camera feed and the website show identical numbers.
         return count, conf, annotated
 
     # ─── OpenCV HSV fallback ─────────────────────────────────────
@@ -403,7 +406,6 @@ class VisionAgent:
             if n > 1:
                 _draw_label_pill(annotated, int(x) - 10, int(y) - int(r) - 4,
                                  f"x{n}", fg=(20, 30, 50), bg=_AMBER)
-        if not overlay:
-            _draw_count_overlay(annotated, count)
-
+        # Count overlay is drawn in _loop with the smoothed count so the
+        # camera feed and the website always show the same number.
         return count, conf, annotated

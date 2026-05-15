@@ -18,8 +18,10 @@ from config import SERIAL_PORT, SERIAL_BAUD, SERIAL_TIMEOUT
 
 
 _DEFAULT_TELEMETRY = {
-    "fsm_state": "S1",
-    "valve":     "OPEN",
+    # fsm_state and valve default to None so cloud.py can detect "no Arduino"
+    # and derive FSM/valve from the vision pipeline instead.
+    "fsm_state": None,
+    "valve":     None,
     "ldr":       0,
     "gas":       0,
     "load_g":    0.0,

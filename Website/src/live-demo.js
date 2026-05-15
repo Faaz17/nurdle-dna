@@ -482,6 +482,20 @@
       if (d.ai_count !== undefined) sim.sensors.pellet = d.ai_count;
       if (d.load_g  !== undefined) sim.sensors.mass   = d.load_g;
 
+      // Render top-3 AI class breakdown chips (Pen / Fragment / Microfibre / …)
+      const classEl = document.getElementById('sClasses');
+      if (classEl) {
+        const cls = d.ai_classes && typeof d.ai_classes === 'object' ? d.ai_classes : {};
+        const top = Object.entries(cls)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 3);
+        classEl.innerHTML = top.length === 0
+          ? ''
+          : top.map(([name, n]) =>
+              `<span class="class-chip">${name}<strong>${n}</strong></span>`
+            ).join('');
+      }
+
       // FSM transition
       if (nextState === 'S3') {
         sim.alarmLatched = true;

@@ -38,8 +38,9 @@ class CloudPublisher:
         self._db       = None
         self._running  = False
         self._thread   = None
-        self._get_state     = None
-        self._get_frame_fn  = None
+        self._get_state         = None
+        self._get_frame_fn      = None
+        self._get_breakdown_fn  = None
         self._last_heartbeat    = 0.0
         self._last_snapshot     = 0.0
         self._last_status       = "OK"
@@ -59,16 +60,18 @@ class CloudPublisher:
 
     # ─── Public API ──────────────────────────────────────────────
 
-    def start(self, get_state_fn, get_frame_fn=None):
+    def start(self, get_state_fn, get_frame_fn=None, get_breakdown_fn=None):
         """
         get_state_fn() must return:
             (vision_state: str, telemetry: dict, count: int, confidence: float)
         get_frame_fn() optionally returns the latest annotated BGR frame, or None.
+        get_breakdown_fn() optionally returns a {class_name: count} dict.
         """
-        self._get_state    = get_state_fn
-        self._get_frame_fn = get_frame_fn
-        self._running      = True
-        self._thread       = threading.Thread(target=self._loop, name="cloud", daemon=True)
+        self._get_state        = get_state_fn
+        self._get_frame_fn     = get_frame_fn
+        self._get_breakdown_fn = get_breakdown_fn
+        self._running          = True
+        self._thread           = threading.Thread(target=self._loop, name="cloud", daemon=True)
         self._thread.start()
 
     def stop(self):
@@ -105,6 +108,8 @@ class CloudPublisher:
         status        = _fsm_to_status(fsm)
         density_index = min(100, count * 7)
 
+        ai_classes = (self._get_breakdown_fn() if self._get_breakdown_fn else {}) or {}
+
         payload = {
             "timestamp":     _iso_now(),
             "device_id":     DEVICE_ID,
@@ -119,6 +124,7 @@ class CloudPublisher:
             "ai_state":      vision_state,
             "ai_count":      count,
             "ai_confidence": round(float(confidence), 2),
+            "ai_classes":    ai_classes,
         }
 
         changed_status   = (status != self._last_status)

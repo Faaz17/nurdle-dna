@@ -210,6 +210,39 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   }
 }
 
+/* ─── AI class-breakdown chips (under Pellet Count) ───────── */
+.sensor-classes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 4px;
+  min-height: 22px;
+}
+.sensor-classes:empty::before {
+  content: 'Awaiting classification…';
+  color: var(--muted, #8a93a3);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.class-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  color: var(--teal, #5bf3df);
+  background: rgba(91, 243, 223, 0.10);
+  border: 1px solid rgba(91, 243, 223, 0.28);
+  font-variant-numeric: tabular-nums;
+}
+.class-chip strong {
+  color: #ffd166;
+  font-weight: 600;
+}
+
 /* ─── Live camera feed ─────────────────────────────────────── */
 .cam-wrap {
   position: relative;

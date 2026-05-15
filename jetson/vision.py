@@ -46,6 +46,8 @@ class VisionAgent:
         self._smooth_count    = 0.0     # EMA-smoothed count for steady display
         self._candidate_state = "CLEAR" # state being considered (debounce)
         self._candidate_since = 0.0     # monotonic time the candidate started
+        self._class_names     = []      # populated from ONNX model metadata
+        self.breakdown        = {}      # class_name -> instance count this frame
 
         self._try_load_onnx()
 
@@ -75,6 +77,11 @@ class VisionAgent:
         with self._lock:
             return None if self.frame is None else self.frame.copy()
 
+    def get_breakdown(self):
+        """Return a thread-safe copy of the per-class detection counts."""
+        with self._lock:
+            return dict(self.breakdown)
+
     # ─── Model loading ───────────────────────────────────────────
 
     def _try_load_onnx(self):
@@ -97,6 +104,20 @@ class VisionAgent:
             self._inp_name = self._session.get_inputs()[0].name
             self._use_yolo = True
             print(f"[vision] YOLOv8 ONNX loaded: {YOLO_MODEL}")
+            # Class names are stored by Ultralytics in the ONNX metadata
+            # under the 'names' key, e.g. "{0: 'Pen', 1: 'Fragment', ...}"
+            try:
+                import ast
+                meta = self._session.get_modelmeta().custom_metadata_map
+                names_str = meta.get("names", "")
+                if names_str:
+                    names_dict = ast.literal_eval(names_str)
+                    self._class_names = [
+                        names_dict[i] for i in sorted(names_dict.keys())
+                    ]
+                    print(f"[vision] {len(self._class_names)} class names loaded")
+            except Exception as exc:
+                print(f"[vision] Class names unavailable: {exc}")
         except Exception as exc:
             print(f"[vision] onnxruntime load error: {exc} — using OpenCV fallback")
 
@@ -193,10 +214,13 @@ class VisionAgent:
         # Confidence filter
         keep = confidences >= YOLO_CONF
         if not keep.any():
+            with self._lock:
+                self.breakdown = {}
             return 0, 0.0, frame.copy()
 
-        preds_k = preds[keep]
-        confs_k = confidences[keep]
+        preds_k    = preds[keep]
+        confs_k    = confidences[keep]
+        cls_ids_k  = class_ids[keep]
 
         # cx,cy,w,h (in 640-px space) → x1,y1,w,h (in original frame space)
         sx, sy = w / _INFER_SIZE, h / _INFER_SIZE
@@ -235,16 +259,31 @@ class VisionAgent:
                 kept.append(i)
 
         if not kept:
+            with self._lock:
+                self.breakdown = {}
             return 0, 0.0, annotated
 
         count = len(kept)
         conf  = float(confs_k[kept].max())
 
+        # Build per-class count breakdown for the website
+        breakdown = {}
+        for i in kept:
+            cls = int(cls_ids_k[i])
+            name = (self._class_names[cls]
+                    if cls < len(self._class_names) else f"Class {cls}")
+            breakdown[name] = breakdown.get(name, 0) + 1
+        with self._lock:
+            self.breakdown = breakdown
+
         for i in kept:
             bx, by, bw_i, bh_i = boxes_xywh[i]
+            cls = int(cls_ids_k[i])
+            label = (self._class_names[cls]
+                     if cls < len(self._class_names) else f"#{cls}")
             x2i, y2i = int(bx + bw_i), int(by + bh_i)
             cv2.rectangle(annotated, (int(bx), int(by)), (x2i, y2i), (0, 255, 200), 2)
-            cv2.putText(annotated, f"{confs_k[i]:.2f}",
+            cv2.putText(annotated, f"{label} {confs_k[i]:.2f}",
                         (int(bx), max(0, int(by) - 5)),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 200), 1)
         cv2.putText(annotated, f"Nurdles: {count}", (10, 30),

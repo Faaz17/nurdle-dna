@@ -499,6 +499,21 @@
       renderSensors();
     });
 
+    // ── Live camera snapshot listener ───────────────────────
+    const snapRef = db.ref('devices/NURDLE-001/snapshot');
+    snapRef.on('value', (snap) => {
+      const s = snap.val();
+      if (!s || !s.data) return;
+      const img = document.getElementById('cameraFeed');
+      const ph  = document.getElementById('camPlaceholder');
+      const ts  = document.getElementById('camTimestamp');
+      if (img) img.src = 'data:image/jpeg;base64,' + s.data;
+      if (ph)  ph.style.display = 'none';
+      if (ts && s.timestamp) {
+        ts.textContent = new Date(s.timestamp).toLocaleTimeString();
+      }
+    });
+
     // ── Recent events listener (last 10) ───────────────────
     evtRef.limitToLast(10).on('child_added', (snap) => {
       const e = snap.val();

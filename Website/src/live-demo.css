@@ -197,16 +197,81 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
 
 .panel-fsm       { grid-column: span 8; }
 .panel-controls  { grid-column: span 4; }
-.panel-sensors   { grid-column: span 8; }
+.panel-camera    { grid-column: span 5; }
+.panel-sensors   { grid-column: span 7; }
 .panel-device    { grid-column: span 4; }
 .panel-events    { grid-column: span 8; }
 .panel-meta      { grid-column: span 4; }
 
 @media (max-width: 1080px) {
-  .panel-fsm, .panel-controls, .panel-sensors, .panel-device, .panel-events, .panel-meta {
+  .panel-fsm, .panel-controls, .panel-camera, .panel-sensors,
+  .panel-device, .panel-events, .panel-meta {
     grid-column: span 12;
   }
 }
+
+/* ─── Live camera feed ─────────────────────────────────────── */
+.cam-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+}
+#cameraFeed {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  image-rendering: auto;
+}
+.cam-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted, #8a93a3);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background:
+    linear-gradient(135deg,
+      rgba(255, 255, 255, 0.02) 25%, transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.02) 75%,
+      transparent 75%);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+.cam-meta {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding: 8px 12px;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0));
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+.cam-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 200, 200, 0.15);
+  color: var(--teal, #5bf3df);
+  border: 1px solid rgba(91, 243, 223, 0.3);
+}
+.cam-ts {
+  margin-left: auto;
+  color: rgba(255, 255, 255, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+.cam-ts strong { color: rgba(255, 255, 255, 0.9); font-weight: 500; }
 
 /* ─── Panels ─── */
 

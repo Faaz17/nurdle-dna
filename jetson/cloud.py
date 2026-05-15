@@ -8,6 +8,7 @@ Writes to two paths:
 Gracefully degrades if Firebase is not configured or unavailable.
 """
 
+import base64
 import collections
 import collections.abc
 import threading
@@ -20,7 +21,10 @@ for _name in ("Mapping", "MutableMapping", "Callable", "Sequence", "MutableSeque
     if not hasattr(collections, _name):
         setattr(collections, _name, getattr(collections.abc, _name))
 
-from config import FIREBASE_CONFIG, DEVICE_ID, BAY_ID, HEARTBEAT_INTERVAL
+from config import (
+    FIREBASE_CONFIG, DEVICE_ID, BAY_ID, HEARTBEAT_INTERVAL,
+    STREAM_CAMERA, STREAM_INTERVAL, STREAM_WIDTH, STREAM_QUALITY,
+)
 
 
 def _iso_now() -> str:
@@ -34,9 +38,12 @@ class CloudPublisher:
         self._db       = None
         self._running  = False
         self._thread   = None
-        self._get_state = None
-        self._last_heartbeat   = 0.0
-        self._last_status      = "OK"
+        self._get_state     = None
+        self._get_frame_fn  = None
+        self._last_heartbeat    = 0.0
+        self._last_snapshot     = 0.0
+        self._last_status       = "OK"
+        self._first_snapshot_logged = False
 
         if FIREBASE_CONFIG.get("apiKey", "REPLACE_ME") == "REPLACE_ME":
             print("[cloud] Firebase not configured — running offline (fill in config.py)")
@@ -52,14 +59,16 @@ class CloudPublisher:
 
     # ─── Public API ──────────────────────────────────────────────
 
-    def start(self, get_state_fn):
+    def start(self, get_state_fn, get_frame_fn=None):
         """
         get_state_fn() must return:
             (vision_state: str, telemetry: dict, count: int, confidence: float)
+        get_frame_fn() optionally returns the latest annotated BGR frame, or None.
         """
-        self._get_state = get_state_fn
-        self._running   = True
-        self._thread    = threading.Thread(target=self._loop, name="cloud", daemon=True)
+        self._get_state    = get_state_fn
+        self._get_frame_fn = get_frame_fn
+        self._running      = True
+        self._thread       = threading.Thread(target=self._loop, name="cloud", daemon=True)
         self._thread.start()
 
     def stop(self):
@@ -125,6 +134,11 @@ class CloudPublisher:
 
         self._last_status = status
 
+        # Publish camera snapshot at STREAM_INTERVAL cadence
+        if STREAM_CAMERA and (now - self._last_snapshot) >= STREAM_INTERVAL:
+            self._publish_snapshot()
+            self._last_snapshot = now
+
     # ─── Firebase writes ─────────────────────────────────────────
 
     _first_publish_logged = False
@@ -141,6 +155,38 @@ class CloudPublisher:
                 self._first_publish_logged = True
         except Exception as exc:
             print("[cloud] Publish error:", exc)
+
+    def _publish_snapshot(self):
+        """Encode the latest annotated frame and write it to Firebase."""
+        if not self._db or not self._get_frame_fn:
+            return
+        frame = self._get_frame_fn()
+        if frame is None:
+            return
+
+        try:
+            import cv2   # local import — only needed when streaming
+            h, w = frame.shape[:2]
+            new_w = STREAM_WIDTH
+            new_h = max(1, int(round(h * (new_w / w))))
+            small = cv2.resize(frame, (new_w, new_h), interpolation=cv2.INTER_AREA)
+            ok, buf = cv2.imencode(".jpg", small,
+                                   [cv2.IMWRITE_JPEG_QUALITY, STREAM_QUALITY])
+            if not ok:
+                return
+            b64 = base64.b64encode(buf.tobytes()).decode("ascii")
+            self._db.child("devices").child(DEVICE_ID).child("snapshot").set({
+                "data":      b64,
+                "timestamp": _iso_now(),
+                "width":     new_w,
+                "height":    new_h,
+            })
+            if not self._first_snapshot_logged:
+                print(f"[cloud] First snapshot published "
+                      f"({new_w}x{new_h}, ~{len(b64) // 1024} KB)")
+                self._first_snapshot_logged = True
+        except Exception as exc:
+            print("[cloud] Snapshot publish error:", exc)
 
     def _push_event(self, payload: dict):
         if not self._db:

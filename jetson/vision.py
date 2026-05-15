@@ -70,6 +70,11 @@ class VisionAgent:
         with self._lock:
             return self.state, self.confidence, self.count
 
+    def get_frame(self):
+        """Return a copy of the latest annotated frame, or None."""
+        with self._lock:
+            return None if self.frame is None else self.frame.copy()
+
     # ─── Model loading ───────────────────────────────────────────
 
     def _try_load_onnx(self):

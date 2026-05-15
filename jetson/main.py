@@ -48,7 +48,7 @@ def main():
         telemetry = bridge.get_telemetry()
         return v_state, telemetry, count, conf
 
-    cloud.start(get_state)
+    cloud.start(get_state, get_frame_fn=vision.get_frame)
 
     print("[main] All subsystems running. Press Ctrl+C to stop.\n")
 

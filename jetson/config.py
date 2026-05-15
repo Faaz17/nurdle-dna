@@ -54,3 +54,10 @@ BAY_ID    = "BAY-1"
 
 # Publish to Firebase every N seconds even when state hasn't changed
 HEARTBEAT_INTERVAL = 5
+
+# ─── Live camera stream → website ─────────────────────────────────
+# Throttled JPEG snapshots written to /devices/NURDLE-001/snapshot.
+STREAM_CAMERA   = True   # set False to disable the live feed
+STREAM_INTERVAL = 1.0    # seconds between snapshots (1 fps default)
+STREAM_WIDTH    = 320    # snapshot width in px (height auto from aspect ratio)
+STREAM_QUALITY  = 60     # JPEG quality 0-100 (60 is a good size/clarity balance)

@@ -94,6 +94,22 @@
           </div>
         </article>
 
+        <article class="panel panel-camera" aria-label="Live camera feed">
+          <header class="panel-head">
+            <h2>Live Camera Feed</h2>
+            <span class="rate-pill">~1 fps &middot; Jetson Nano</span>
+          </header>
+          <div class="cam-wrap">
+            <img id="cameraFeed" alt="Live annotated camera view from the Jetson Nano">
+            <div class="cam-placeholder" id="camPlaceholder">Waiting for camera frame&hellip;</div>
+            <div class="cam-meta">
+              <span class="cam-tag">ROI box</span>
+              <span class="cam-tag">Pellet detections</span>
+              <span class="cam-ts">Last frame: <strong id="camTimestamp">&mdash;</strong></span>
+            </div>
+          </div>
+        </article>
+
         <article class="panel panel-sensors" aria-label="Sensor readings">
           <header class="panel-head"><h2>Live Sensor Readings</h2><span class="rate-pill">Sample rate &middot; 5 Hz</span></header>
           <div class="sensor-grid">

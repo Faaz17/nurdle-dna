@@ -18,6 +18,11 @@ from config import (
     COUNT_WARN, COUNT_CRIT,
 )
 
+try:
+    from config import HYBRID_HSV
+except ImportError:
+    HYBRID_HSV = False
+
 # YOLOv8 ONNX input size (model was exported at 640×640)
 _INFER_SIZE = 640
 
@@ -98,6 +103,13 @@ class VisionAgent:
 
             if self._use_yolo:
                 count, conf, annotated = self._infer_onnx(frame)
+                if HYBRID_HSV:
+                    hsv_count, hsv_conf, annotated = self._infer_hsv(
+                        annotated, overlay=True
+                    )
+                    if hsv_count > count:
+                        count = hsv_count
+                        conf  = max(conf, hsv_conf)
             else:
                 count, conf, annotated = self._infer_hsv(frame)
 
@@ -179,22 +191,45 @@ class VisionAgent:
 
     # ─── OpenCV HSV fallback ─────────────────────────────────────
 
-    def _infer_hsv(self, frame):
+    def _infer_hsv(self, frame, overlay=False):
+        """
+        Detect bright/white objects via HSV threshold + contour analysis.
+        Tuned to be sensitive: catches paper, foam, beads, pellets.
+        Large blobs (e.g. a full sheet of paper) are split into multiple
+        virtual detections so the count scales with how much white is visible.
+        """
         hsv  = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        mask = cv2.inRange(hsv, (0, 0, 170), (180, 50, 255))
-        k    = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        # Wider value range → catches off-white, slightly grey, or shaded white
+        mask = cv2.inRange(hsv, (0, 0, 140), (180, 70, 255))
+        k    = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN,  k)
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k)
 
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        pellets = [c for c in contours if 50 < cv2.contourArea(c) < 2000]
-        count   = len(pellets)
-        conf    = min(1.0, count / max(COUNT_CRIT, 1))
 
-        annotated = frame.copy()
-        for c in pellets:
+        count   = 0
+        pellets = []
+        for c in contours:
+            area = cv2.contourArea(c)
+            if area < 30:
+                continue
+            # Each ~600 px² counts as one pellet — a full A4 page in view
+            # registers as ~15-25 detections instead of just 1.
+            n = max(1, int(area // 600))
+            count += n
+            pellets.append((c, n))
+
+        # Cap so a blank wall doesn't peg the meter to absurd numbers
+        count = min(count, COUNT_CRIT * 3)
+        conf  = min(1.0, count / max(COUNT_CRIT, 1))
+
+        annotated = frame if overlay else frame.copy()
+        for c, n in pellets:
             (x, y), r = cv2.minEnclosingCircle(c)
-            cv2.circle(annotated, (int(x), int(y)), int(r) + 2, (0, 255, 200), 2)
+            cv2.circle(annotated, (int(x), int(y)), int(r) + 2, (255, 200, 0), 2)
+            if n > 1:
+                cv2.putText(annotated, f"x{n}", (int(x) - 10, int(y) - int(r) - 5),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 200, 0), 1)
         cv2.putText(annotated, f"Nurdles: {count}", (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 200), 2)
 

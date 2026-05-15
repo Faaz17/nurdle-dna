@@ -33,8 +33,8 @@ YOLO_IOU   = 0.45    # NMS IoU threshold
 HYBRID_HSV = True
 
 # ─── Nurdle count → FSM state ────────────────────────────────────
-COUNT_WARN = 3    # >= 3 detected nurdles → send WARN to Arduino
-COUNT_CRIT = 10   # >= 10 detected nurdles → send CRIT to Arduino
+COUNT_WARN = 4    # >= 4 sustained detections → WARN (yellow)
+COUNT_CRIT = 12   # >= 12 sustained detections → CRIT (red, ALARM)
 
 # ─── Firebase ────────────────────────────────────────────────────
 # Replace REPLACE_ME values after creating the Firebase project.

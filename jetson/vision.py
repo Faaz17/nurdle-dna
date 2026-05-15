@@ -43,7 +43,9 @@ class VisionAgent:
         self._use_yolo = False
         self._cap      = None
         self._thread   = None
-        self._smooth_count = 0.0   # EMA-smoothed count for steady website display
+        self._smooth_count    = 0.0     # EMA-smoothed count for steady display
+        self._candidate_state = "CLEAR" # state being considered (debounce)
+        self._candidate_since = 0.0     # monotonic time the candidate started
 
         self._try_load_onnx()
 
@@ -114,27 +116,39 @@ class VisionAgent:
             else:
                 count, conf, annotated = self._infer_hsv(frame)
 
-            # EMA-smoothed count drives BOTH the displayed value and the
-            # FSM state — prevents single-frame spikes from flipping S1↔S3.
-            SMOOTH_ALPHA = 0.25      # lower = more stable, slower to react
+            # EMA-smoothed count drives both the displayed value and the
+            # state classification. Slow alpha = very stable, no flicker.
+            SMOOTH_ALPHA = 0.20
             self._smooth_count = (
                 SMOOTH_ALPHA * count + (1.0 - SMOOTH_ALPHA) * self._smooth_count
             )
             display_count = int(round(self._smooth_count))
 
-            # Hysteresis: require count to climb above a threshold to enter
-            # a higher state, but to drop noticeably below it before leaving.
-            # This stops the badge oscillating right at the threshold value.
-            HYST = 1
-            prev = self.state
+            # Candidate state from the smoothed count
             if display_count >= COUNT_CRIT:
-                state = "CRIT"
+                candidate = "CRIT"
             elif display_count >= COUNT_WARN:
-                state = "WARN"
-            elif display_count <= max(0, COUNT_WARN - HYST - 1):
-                state = "CLEAR"
+                candidate = "WARN"
             else:
-                state = prev   # stay in current state inside the dead-band
+                candidate = "CLEAR"
+
+            # Confirmation timer — state only flips after the candidate has
+            # been held continuously for HOLD_*. Brief flickers, single-frame
+            # spikes, and momentary glare all fail to trigger an alarm.
+            HOLD_WARN  = 1.5    # seconds to confirm WARN  (yellow)
+            HOLD_CRIT  = 2.5    # seconds to confirm CRIT  (red, ALARM)
+            HOLD_CLEAR = 2.0    # seconds to confirm return to CLEAR
+
+            now_t = time.monotonic()
+            if candidate != self._candidate_state:
+                self._candidate_state = candidate
+                self._candidate_since = now_t
+
+            held = now_t - self._candidate_since
+            required = (HOLD_CRIT  if candidate == "CRIT"  else
+                        HOLD_WARN  if candidate == "WARN"  else
+                        HOLD_CLEAR)
+            state = candidate if held >= required else self.state
 
             with self._lock:
                 self.count      = display_count
@@ -222,7 +236,9 @@ class VisionAgent:
         roi_x2, roi_y2 = int(w * 0.80), int(h * 0.80)
 
         hsv  = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        mask = cv2.inRange(hsv, (0, 0, 140), (180, 70, 255))
+        # Tight white range: only really bright (V>=170), neutral (S<=60)
+        # pixels qualify. Off-white walls, shaded areas, skin tones rejected.
+        mask = cv2.inRange(hsv, (0, 0, 170), (180, 60, 255))
         k    = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN,  k)
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k)

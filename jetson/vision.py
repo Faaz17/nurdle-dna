@@ -111,7 +111,12 @@ class VisionAgent:
 
             if self._use_yolo:
                 count, conf, annotated = self._infer_onnx(frame)
-                if HYBRID_HSV:
+                # Only fall back to HSV when YOLO is finding almost nothing.
+                # Prevents the double-annotation (yellow boxes + cyan circles
+                # on the same pellet) the user saw in the bottle test, and
+                # stops bottle-wall glare from inflating the count when YOLO
+                # has already detected real pellets confidently.
+                if HYBRID_HSV and count < COUNT_WARN:
                     hsv_count, hsv_conf, annotated = self._infer_hsv(
                         annotated, overlay=True
                     )
@@ -165,6 +170,10 @@ class VisionAgent:
 
     def _infer_onnx(self, frame):
         h, w = frame.shape[:2]
+        # Same central-60% ROI as the HSV pass — both detectors must agree on
+        # what region is "the flow cell" so they never disagree on background.
+        roi_x1, roi_y1 = int(w * 0.20), int(h * 0.20)
+        roi_x2, roi_y2 = int(w * 0.80), int(h * 0.80)
 
         # Pre-process: BGR→RGB, resize, normalise, NCHW
         img = cv2.resize(frame, (_INFER_SIZE, _INFER_SIZE))
@@ -204,16 +213,34 @@ class VisionAgent:
         indices = cv2.dnn.NMSBoxes(
             boxes_xywh.tolist(), confs_k.tolist(), YOLO_CONF, YOLO_IOU
         )
+
+        annotated = frame.copy()
+        # Draw ROI rectangle on YOLO path too so it stays visible regardless
+        cv2.rectangle(annotated, (roi_x1, roi_y1), (roi_x2, roi_y2),
+                      (80, 80, 80), 1, cv2.LINE_AA)
+
         if len(indices) == 0:
-            return 0, 0.0, frame.copy()
+            return 0, 0.0, annotated
 
         indices = np.array(indices).flatten()
-        count   = len(indices)
-        conf    = float(confs_k[indices].max())
 
-        # Annotate
-        annotated = frame.copy()
+        # ROI filter — keep only detections whose centre lies inside the ROI.
+        # YOLO was firing on bottle texture / background; this is the fix.
+        kept = []
         for i in indices:
+            bx, by, bw_i, bh_i = boxes_xywh[i]
+            cx = bx + bw_i / 2
+            cy = by + bh_i / 2
+            if roi_x1 <= cx <= roi_x2 and roi_y1 <= cy <= roi_y2:
+                kept.append(i)
+
+        if not kept:
+            return 0, 0.0, annotated
+
+        count = len(kept)
+        conf  = float(confs_k[kept].max())
+
+        for i in kept:
             bx, by, bw_i, bh_i = boxes_xywh[i]
             x2i, y2i = int(bx + bw_i), int(by + bh_i)
             cv2.rectangle(annotated, (int(bx), int(by)), (x2i, y2i), (0, 255, 200), 2)

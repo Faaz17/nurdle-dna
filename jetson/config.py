@@ -25,7 +25,7 @@ CAMERA_INDEX = 0
 # Path relative to jetson/ directory. Set to None to use OpenCV fallback.
 # Export from Ultralytics: yolo export model=nurdle.pt format=onnx
 YOLO_MODEL = "models/nurdle-yolov8n.onnx"
-YOLO_CONF  = 0.25    # confidence threshold (lowered for demo sensitivity)
+YOLO_CONF  = 0.40    # confidence threshold (raised after bottle-test feedback)
 YOLO_IOU   = 0.45    # NMS IoU threshold
 
 # Hybrid detection — combine YOLO with HSV white-object fallback so the demo

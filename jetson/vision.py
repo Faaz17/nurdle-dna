@@ -43,6 +43,7 @@ class VisionAgent:
         self._use_yolo = False
         self._cap      = None
         self._thread   = None
+        self._smooth_count = 0.0   # EMA-smoothed count for steady website display
 
         self._try_load_onnx()
 
@@ -113,14 +114,22 @@ class VisionAgent:
             else:
                 count, conf, annotated = self._infer_hsv(frame)
 
+            # Raw count drives the FSM state (instant response to spikes)
             state = (
                 "CRIT" if count >= COUNT_CRIT else
                 "WARN" if count >= COUNT_WARN else
                 "CLEAR"
             )
 
+            # EMA-smoothed count drives the displayed value (no flicker)
+            SMOOTH_ALPHA = 0.35
+            self._smooth_count = (
+                SMOOTH_ALPHA * count + (1.0 - SMOOTH_ALPHA) * self._smooth_count
+            )
+            display_count = int(round(self._smooth_count))
+
             with self._lock:
-                self.count      = count
+                self.count      = display_count
                 self.confidence = conf
                 self.state      = state
                 self.frame      = annotated
@@ -219,8 +228,9 @@ class VisionAgent:
             count += n
             pellets.append((c, n))
 
-        # Cap so a blank wall doesn't peg the meter to absurd numbers
-        count = min(count, COUNT_CRIT * 3)
+        # Cap so a blank wall doesn't peg the meter to absurd numbers,
+        # but leave room (5x CRIT = 50) for visual escalation in the demo
+        count = min(count, COUNT_CRIT * 5)
         conf  = min(1.0, count / max(COUNT_CRIT, 1))
 
         annotated = frame if overlay else frame.copy()

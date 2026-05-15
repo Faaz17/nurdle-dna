@@ -114,19 +114,27 @@ class VisionAgent:
             else:
                 count, conf, annotated = self._infer_hsv(frame)
 
-            # Raw count drives the FSM state (instant response to spikes)
-            state = (
-                "CRIT" if count >= COUNT_CRIT else
-                "WARN" if count >= COUNT_WARN else
-                "CLEAR"
-            )
-
-            # EMA-smoothed count drives the displayed value (no flicker)
-            SMOOTH_ALPHA = 0.35
+            # EMA-smoothed count drives BOTH the displayed value and the
+            # FSM state — prevents single-frame spikes from flipping S1↔S3.
+            SMOOTH_ALPHA = 0.25      # lower = more stable, slower to react
             self._smooth_count = (
                 SMOOTH_ALPHA * count + (1.0 - SMOOTH_ALPHA) * self._smooth_count
             )
             display_count = int(round(self._smooth_count))
+
+            # Hysteresis: require count to climb above a threshold to enter
+            # a higher state, but to drop noticeably below it before leaving.
+            # This stops the badge oscillating right at the threshold value.
+            HYST = 1
+            prev = self.state
+            if display_count >= COUNT_CRIT:
+                state = "CRIT"
+            elif display_count >= COUNT_WARN:
+                state = "WARN"
+            elif display_count <= max(0, COUNT_WARN - HYST - 1):
+                state = "CLEAR"
+            else:
+                state = prev   # stay in current state inside the dead-band
 
             with self._lock:
                 self.count      = display_count

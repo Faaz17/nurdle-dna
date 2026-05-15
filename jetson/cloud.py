@@ -79,8 +79,16 @@ class CloudPublisher:
         vision_state, telemetry, count, confidence = self._get_state()
         now = time.time()
 
-        fsm    = telemetry.get("fsm_state", "S1")
+        arduino_fsm = telemetry.get("fsm_state")
+        if arduino_fsm and arduino_fsm not in ("", "S0"):
+            fsm = arduino_fsm                     # Real Arduino state wins
+        else:
+            # No Arduino — derive FSM from vision so the website still escalates
+            fsm = {"CRIT": "S3", "WARN": "S2", "CLEAR": "S1"}.get(vision_state, "S1")
+
         valve  = telemetry.get("valve",     "OPEN")
+        if not telemetry.get("fsm_state"):
+            valve = "CLOSED" if fsm == "S3" else "OPEN"
         ldr    = telemetry.get("ldr",       0)
         gas    = telemetry.get("gas",       0)
         load_g = telemetry.get("load_g",    0.0)

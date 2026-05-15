@@ -207,12 +207,22 @@ class VisionAgent:
         Large blobs (e.g. a full sheet of paper) are split into multiple
         virtual detections so the count scales with how much white is visible.
         """
+        h, w = frame.shape[:2]
+        # Region of Interest — analyse only the central 60% of the frame
+        # (where the flow cell sits). Ignores wall/edge/LED-housing reflections.
+        roi_x1, roi_y1 = int(w * 0.20), int(h * 0.20)
+        roi_x2, roi_y2 = int(w * 0.80), int(h * 0.80)
+
         hsv  = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        # Wider value range → catches off-white, slightly grey, or shaded white
         mask = cv2.inRange(hsv, (0, 0, 140), (180, 70, 255))
         k    = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN,  k)
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k)
+
+        # Apply ROI: zero out everything outside the central window
+        roi_mask = np.zeros(mask.shape, dtype=np.uint8)
+        roi_mask[roi_y1:roi_y2, roi_x1:roi_x2] = 255
+        mask = cv2.bitwise_and(mask, roi_mask)
 
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -221,6 +231,14 @@ class VisionAgent:
         for c in contours:
             area = cv2.contourArea(c)
             if area < 30:
+                continue
+            # Circularity filter — pellets are round-ish (>= 0.4).
+            # Long thin highlights or irregular splash patterns are rejected.
+            perimeter = cv2.arcLength(c, True)
+            if perimeter == 0:
+                continue
+            circularity = 4.0 * np.pi * area / (perimeter * perimeter)
+            if circularity < 0.4:
                 continue
             # Each ~1200 px² counts as one pellet — a full A4 page in view
             # registers as ~15-20 detections instead of just 1.
@@ -234,6 +252,9 @@ class VisionAgent:
         conf  = min(1.0, count / max(COUNT_CRIT, 1))
 
         annotated = frame if overlay else frame.copy()
+        # Draw ROI rectangle so it's obvious which region is being analysed
+        cv2.rectangle(annotated, (roi_x1, roi_y1), (roi_x2, roi_y2),
+                      (80, 80, 80), 1, cv2.LINE_AA)
         for c, n in pellets:
             (x, y), r = cv2.minEnclosingCircle(c)
             cv2.circle(annotated, (int(x), int(y)), int(r) + 2, (255, 200, 0), 2)

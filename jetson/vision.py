@@ -26,6 +26,56 @@ except ImportError:
 # YOLOv8 ONNX input size (model was exported at 640×640)
 _INFER_SIZE = 640
 
+# ─── Annotation styling (BGR colours, match website teal theme) ──
+_TEAL    = (223, 243, 91)    # #5bf3df — primary accent
+_AMBER   = (102, 209, 255)   # #ffd166 — emphasis
+_DARK    = (45, 30, 18)      # background for label pills
+_BRACKET = 28                # corner-bracket length for ROI box (px)
+
+
+def _draw_roi_brackets(img, x1, y1, x2, y2, colour=_TEAL, thick=2):
+    """Draw a sci-fi style ROI as four corner brackets instead of a full box."""
+    L = _BRACKET
+    for (cx, cy, dx, dy) in (
+        (x1, y1,  1,  1),  # top-left
+        (x2, y1, -1,  1),  # top-right
+        (x1, y2,  1, -1),  # bottom-left
+        (x2, y2, -1, -1),  # bottom-right
+    ):
+        cv2.line(img, (cx, cy), (cx + L * dx, cy), colour, thick, cv2.LINE_AA)
+        cv2.line(img, (cx, cy), (cx, cy + L * dy), colour, thick, cv2.LINE_AA)
+
+
+def _draw_label_pill(img, x, y, text, fg=(20, 30, 50), bg=_TEAL,
+                     font_scale=0.45, thick=1):
+    """Filled rectangle behind text — readable label even on bright pellets."""
+    (tw, th), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, font_scale, thick)
+    pad_x, pad_y = 4, 3
+    box_w, box_h = tw + pad_x * 2, th + pad_y * 2
+    # Anchor pill above (x, y); if it would clip the top, draw below instead
+    by1 = y - box_h
+    if by1 < 0:
+        by1 = y + 2
+    cv2.rectangle(img, (x, by1), (x + box_w, by1 + box_h), bg, -1, cv2.LINE_AA)
+    cv2.putText(img, text, (x + pad_x, by1 + box_h - pad_y),
+                cv2.FONT_HERSHEY_SIMPLEX, font_scale, fg, thick, cv2.LINE_AA)
+
+
+def _draw_count_overlay(img, count):
+    """Big top-left 'Nurdles: N' badge with semi-transparent backdrop."""
+    text = f"Nurdles: {count}"
+    (tw, th), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.85, 2)
+    pad = 10
+    x, y = 12, 12
+    overlay = img.copy()
+    cv2.rectangle(overlay, (x, y), (x + tw + pad * 2, y + th + pad * 2),
+                  (8, 12, 22), -1)
+    cv2.addWeighted(overlay, 0.65, img, 0.35, 0, img)
+    cv2.rectangle(img, (x, y), (x + tw + pad * 2, y + th + pad * 2),
+                  _TEAL, 1, cv2.LINE_AA)
+    cv2.putText(img, text, (x + pad, y + pad + th),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.85, _TEAL, 2, cv2.LINE_AA)
+
 
 class VisionAgent:
     """Continuous camera inference; thread-safe .get() for latest result."""
@@ -239,17 +289,15 @@ class VisionAgent:
         )
 
         annotated = frame.copy()
-        # Draw ROI rectangle on YOLO path too so it stays visible regardless
-        cv2.rectangle(annotated, (roi_x1, roi_y1), (roi_x2, roi_y2),
-                      (80, 80, 80), 1, cv2.LINE_AA)
+        _draw_roi_brackets(annotated, roi_x1, roi_y1, roi_x2, roi_y2)
 
         if len(indices) == 0:
+            _draw_count_overlay(annotated, 0)
             return 0, 0.0, annotated
 
         indices = np.array(indices).flatten()
 
         # ROI filter — keep only detections whose centre lies inside the ROI.
-        # YOLO was firing on bottle texture / background; this is the fix.
         kept = []
         for i in indices:
             bx, by, bw_i, bh_i = boxes_xywh[i]
@@ -261,6 +309,7 @@ class VisionAgent:
         if not kept:
             with self._lock:
                 self.breakdown = {}
+            _draw_count_overlay(annotated, 0)
             return 0, 0.0, annotated
 
         count = len(kept)
@@ -281,14 +330,12 @@ class VisionAgent:
             cls = int(cls_ids_k[i])
             label = (self._class_names[cls]
                      if cls < len(self._class_names) else f"#{cls}")
+            x1i, y1i = int(bx), int(by)
             x2i, y2i = int(bx + bw_i), int(by + bh_i)
-            cv2.rectangle(annotated, (int(bx), int(by)), (x2i, y2i), (0, 255, 200), 2)
-            cv2.putText(annotated, f"{label} {confs_k[i]:.2f}",
-                        (int(bx), max(0, int(by) - 5)),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 200), 1)
-        cv2.putText(annotated, f"Nurdles: {count}", (10, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 200), 2)
+            cv2.rectangle(annotated, (x1i, y1i), (x2i, y2i), _TEAL, 2, cv2.LINE_AA)
+            _draw_label_pill(annotated, x1i, y1i, f"{label} {confs_k[i]:.2f}")
 
+        _draw_count_overlay(annotated, count)
         return count, conf, annotated
 
     # ─── OpenCV HSV fallback ─────────────────────────────────────
@@ -347,16 +394,16 @@ class VisionAgent:
         conf  = min(1.0, count / max(COUNT_CRIT, 1))
 
         annotated = frame if overlay else frame.copy()
-        # Draw ROI rectangle so it's obvious which region is being analysed
-        cv2.rectangle(annotated, (roi_x1, roi_y1), (roi_x2, roi_y2),
-                      (80, 80, 80), 1, cv2.LINE_AA)
+        if not overlay:
+            _draw_roi_brackets(annotated, roi_x1, roi_y1, roi_x2, roi_y2)
         for c, n in pellets:
             (x, y), r = cv2.minEnclosingCircle(c)
-            cv2.circle(annotated, (int(x), int(y)), int(r) + 2, (255, 200, 0), 2)
+            cv2.circle(annotated, (int(x), int(y)), int(r) + 2,
+                       _AMBER, 2, cv2.LINE_AA)
             if n > 1:
-                cv2.putText(annotated, f"x{n}", (int(x) - 10, int(y) - int(r) - 5),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 200, 0), 1)
-        cv2.putText(annotated, f"Nurdles: {count}", (10, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 200), 2)
+                _draw_label_pill(annotated, int(x) - 10, int(y) - int(r) - 4,
+                                 f"x{n}", fg=(20, 30, 50), bg=_AMBER)
+        if not overlay:
+            _draw_count_overlay(annotated, count)
 
         return count, conf, annotated

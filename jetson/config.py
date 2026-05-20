@@ -25,7 +25,7 @@ CAMERA_INDEX = 0
 # Path relative to jetson/ directory. Set to None to use OpenCV fallback.
 # Export from Ultralytics: yolo export model=nurdle.pt format=onnx
 YOLO_MODEL = "models/nurdle-yolov8n.onnx"
-YOLO_CONF  = 0.40    # confidence threshold (raised after bottle-test feedback)
+YOLO_CONF  = 0.25    # demo: lowered from 0.40 so weak detections still count
 YOLO_IOU   = 0.45    # NMS IoU threshold
 
 # Hybrid detection — combine YOLO with HSV white-object fallback so the demo
@@ -33,8 +33,8 @@ YOLO_IOU   = 0.45    # NMS IoU threshold
 HYBRID_HSV = True
 
 # ─── Nurdle count → FSM state ────────────────────────────────────
-COUNT_WARN = 4    # >= 4 sustained detections → WARN (yellow)
-COUNT_CRIT = 12   # >= 12 sustained detections → CRIT (red, ALARM)
+COUNT_WARN = 2    # demo: lowered from 4 so badge flips yellow quickly
+COUNT_CRIT = 6    # demo: lowered from 12 so ALARM fires with just a few pellets
 
 # ─── Firebase ────────────────────────────────────────────────────
 # Replace REPLACE_ME values after creating the Firebase project.

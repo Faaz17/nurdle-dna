@@ -388,9 +388,9 @@ class VisionAgent:
         roi_x2, roi_y2 = int(w * 0.80), int(h * 0.80)
 
         hsv  = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        # Tight white range: only really bright (V>=170), neutral (S<=60)
-        # pixels qualify. Off-white walls, shaded areas, skin tones rejected.
-        mask = cv2.inRange(hsv, (0, 0, 170), (180, 60, 255))
+        # Demo: wider white range (V>=150, S<=80) so more pellets register.
+        # Still rejects skin and deep shadows.
+        mask = cv2.inRange(hsv, (0, 0, 150), (180, 80, 255))
         k    = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN,  k)
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k)

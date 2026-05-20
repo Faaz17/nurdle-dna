@@ -77,31 +77,29 @@ Press `Ctrl+C` to stop cleanly.
 
 ## 5. Auto-start on Jetson boot (systemd)
 
-```bash
-sudo nano /etc/systemd/system/nurdledna.service
-```
+For the prototype enclosure (no keyboard / monitor attached during normal
+operation), the agent should start automatically when the Jetson powers on.
+A ready-to-use unit file is shipped at [`nurdle-agent.service`](nurdle-agent.service).
 
-Paste:
-```ini
-[Unit]
-Description=NurdleDNA Jetson Agent
-After=network.target
-
-[Service]
-ExecStart=/usr/bin/python3 /home/jetson/nurdle-dna/jetson/main.py
-WorkingDirectory=/home/jetson/nurdle-dna/jetson
-Restart=on-failure
-User=jetson
-
-[Install]
-WantedBy=multi-user.target
-```
+One-time install:
 
 ```bash
-sudo systemctl enable nurdledna
-sudo systemctl start nurdledna
-sudo systemctl status nurdledna
+cd ~/nurdle-dna && git pull
+sudo cp jetson/nurdle-agent.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now nurdle-agent.service
 ```
+
+Check it's running:
+
+```bash
+sudo systemctl status nurdle-agent.service
+journalctl -u nurdle-agent -n 50    # last 50 log lines
+```
+
+The full guide — including diagnostics, what to expect at power-on, and how
+to monitor status without a screen — is in
+[INSTALL_AUTOSTART.md](INSTALL_AUTOSTART.md).
 
 ---
 

@@ -1,0 +1,18 @@
+[Unit]
+Description=NurdleDNA Jetson Agent (vision + cloud)
+Documentation=https://github.com/Faaz17/nurdle-dna
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=faaz17
+WorkingDirectory=/home/faaz17/nurdle-dna/jetson
+ExecStart=/usr/bin/python3 main.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=append:/home/faaz17/nurdle-agent.log
+StandardError=append:/home/faaz17/nurdle-agent.log
+
+[Install]
+WantedBy=multi-user.target

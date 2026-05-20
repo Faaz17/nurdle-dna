@@ -165,6 +165,8 @@
       sim.liveMode = false;
       if (dom.netLed)   dom.netLed.classList.remove('is-live');
       if (dom.netLabel) dom.netLabel.textContent = 'SIMULATED';
+      const banner = document.getElementById('simBanner');
+      if (banner) banner.style.display = '';
       logEvent('warn', 'Live data stalled > 8s — reverting to simulation');
     }
 
@@ -466,6 +468,10 @@
       // Drive the LIVE indicator from real device data
       if (dom.netLed)   dom.netLed.classList.add('is-live');
       if (dom.netLabel) dom.netLabel.textContent = 'LIVE';
+
+      // Hide the static "Simulation mode" banner now that real data is flowing
+      const banner = document.getElementById('simBanner');
+      if (banner) banner.style.display = 'none';
 
       // Map FSM state string → sim state key
       const fsmMap = { S0: 'S0', S1: 'S1', S2: 'S2', S3: 'S3', S4: 'S4' };

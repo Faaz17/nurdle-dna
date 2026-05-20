@@ -8,6 +8,11 @@ Wants=network-online.target
 Type=simple
 User=faaz17
 WorkingDirectory=/home/faaz17/nurdle-dna/jetson
+# Wait for USB enumeration + force-load UVC camera driver before launching.
+# Without this, the service can start before /dev/video0 binds to the webcam.
+ExecStartPre=/bin/sleep 12
+ExecStartPre=/bin/sh -c '/sbin/modprobe uvcvideo || true'
+ExecStartPre=/bin/sh -c '/bin/udevadm settle --timeout=10 || true'
 ExecStart=/usr/bin/python3 main.py
 Restart=on-failure
 RestartSec=10

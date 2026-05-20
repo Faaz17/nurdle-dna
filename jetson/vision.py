@@ -105,12 +105,24 @@ class VisionAgent:
 
     def start(self):
         self._running = True
-        self._cap = cv2.VideoCapture(CAMERA_INDEX)
-        if not self._cap.isOpened():
-            print("[vision] WARNING: could not open camera index", CAMERA_INDEX)
+        self._open_camera()      # First attempt; the _loop will retry forever if it fails
         self._thread = threading.Thread(target=self._loop, name="vision", daemon=True)
         self._thread.start()
         print("[vision] Started —", "YOLOv8 ONNX" if self._use_yolo else "OpenCV HSV fallback")
+
+    def _open_camera(self):
+        """Try to open the camera. Returns True on success, False otherwise."""
+        try:
+            if self._cap is not None:
+                self._cap.release()
+        except Exception:
+            pass
+        self._cap = cv2.VideoCapture(CAMERA_INDEX)
+        if self._cap.isOpened():
+            print(f"[vision] Camera opened (index {CAMERA_INDEX})")
+            return True
+        print(f"[vision] WARNING: could not open camera index {CAMERA_INDEX} — will retry")
+        return False
 
     def stop(self):
         self._running = False
@@ -174,10 +186,29 @@ class VisionAgent:
     # ─── Inference loop ──────────────────────────────────────────
 
     def _loop(self):
+        last_reopen_attempt = 0.0
         while self._running:
+            # Self-heal: if the camera isn't open (boot race) or starts
+            # returning empty frames (unplug), retry opening it every 3 s
+            # in the background instead of giving up.
+            if self._cap is None or not self._cap.isOpened():
+                now = time.monotonic()
+                if now - last_reopen_attempt >= 3.0:
+                    last_reopen_attempt = now
+                    self._open_camera()
+                time.sleep(0.5)
+                continue
+
             ret, frame = self._cap.read()
             if not ret:
-                time.sleep(0.05)
+                # Read failed — likely a transient hiccup or the camera
+                # unplugged. Drop it and let the reopen-loop above handle it.
+                try:
+                    self._cap.release()
+                except Exception:
+                    pass
+                self._cap = None
+                time.sleep(0.1)
                 continue
 
             if self._use_yolo:

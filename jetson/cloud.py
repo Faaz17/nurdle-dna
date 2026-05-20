@@ -45,6 +45,8 @@ class CloudPublisher:
         self._last_snapshot     = 0.0
         self._last_status       = "OK"
         self._first_snapshot_logged = False
+        self._publish_count    = 0     # cumulative successful publishes
+        self._last_publish_log = 0.0   # last time we logged a publish-success line
 
         if FIREBASE_CONFIG.get("apiKey", "REPLACE_ME") == "REPLACE_ME":
             print("[cloud] Firebase not configured — running offline (fill in config.py)")
@@ -147,18 +149,23 @@ class CloudPublisher:
 
     # ─── Firebase writes ─────────────────────────────────────────
 
-    _first_publish_logged = False
-
     def _publish_device(self, payload: dict):
         if not self._db:
             _print_offline(payload)
             return
         try:
             self._db.child("devices").child(DEVICE_ID).set(payload)
-            if not self._first_publish_logged:
+            self._publish_count += 1
+            now = time.time()
+            if self._publish_count == 1:
                 print(f"[cloud] First publish OK → {payload['status']} "
                       f"(FSM={payload['fsm_state']})")
-                self._first_publish_logged = True
+                self._last_publish_log = now
+            elif now - self._last_publish_log >= 30.0:
+                print(f"[cloud] Publishing OK "
+                      f"({self._publish_count} writes total, "
+                      f"FSM={payload['fsm_state']})")
+                self._last_publish_log = now
         except Exception as exc:
             print("[cloud] Publish error:", exc)
 

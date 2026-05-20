@@ -8,6 +8,9 @@ Wants=network-online.target
 Type=simple
 User=faaz17
 WorkingDirectory=/home/faaz17/nurdle-dna/jetson
+# Disable Python stdout buffering so log lines appear in real time when
+# stdout is redirected to a file by systemd (default buffered = full block).
+Environment=PYTHONUNBUFFERED=1
 # Wait for USB enumeration + force-load UVC camera driver before launching.
 # Without this, the service can start before /dev/video0 binds to the webcam.
 ExecStartPre=/bin/sleep 12

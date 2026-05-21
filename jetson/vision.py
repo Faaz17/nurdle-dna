@@ -388,12 +388,14 @@ class VisionAgent:
         roi_x2, roi_y2 = int(w * 0.80), int(h * 0.80)
 
         hsv  = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        # Demo: wider white range (V>=150, S<=80) so more pellets register.
-        # Still rejects skin and deep shadows.
-        mask = cv2.inRange(hsv, (0, 0, 150), (180, 80, 255))
+        # Tighter white range (V>=170, S<=60) so glare doesn't merge real
+        # pellets into one giant blob. Pellets stay distinct, count goes up,
+        # circles stay small around each pellet.
+        mask = cv2.inRange(hsv, (0, 0, 170), (180, 60, 255))
         k    = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN,  k)
-        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k)
+        # NOTE: no MORPH_CLOSE — closing was merging adjacent pellets into
+        # one giant blob, killing the count and bloating the circles.
 
         # Apply ROI: zero out everything outside the central window
         roi_mask = np.zeros(mask.shape, dtype=np.uint8)
@@ -408,6 +410,10 @@ class VisionAgent:
             area = cv2.contourArea(c)
             if area < 30:
                 continue
+            # Max-area filter — reject giant blobs (LED glare, container glow,
+            # camera flare) that wouldn't be a single pellet anyway.
+            if area > 5000:
+                continue
             # Circularity filter — pellets are round-ish (>= 0.4).
             # Long thin highlights or irregular splash patterns are rejected.
             perimeter = cv2.arcLength(c, True)
@@ -416,9 +422,9 @@ class VisionAgent:
             circularity = 4.0 * np.pi * area / (perimeter * perimeter)
             if circularity < 0.4:
                 continue
-            # Each ~1200 px² counts as one pellet — a full A4 page in view
-            # registers as ~15-20 detections instead of just 1.
-            n = max(1, int(area // 1200))
+            # Smaller divisor (600 vs 1200) so a clump of touching pellets
+            # still registers as multiple, even if morphology partially merges.
+            n = max(1, int(area // 600))
             count += n
             pellets.append((c, n))
 

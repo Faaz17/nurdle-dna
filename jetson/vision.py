@@ -213,12 +213,11 @@ class VisionAgent:
 
             if self._use_yolo:
                 count, conf, annotated = self._infer_onnx(frame)
-                # Only fall back to HSV when YOLO is finding almost nothing.
-                # Prevents the double-annotation (yellow boxes + cyan circles
-                # on the same pellet) the user saw in the bottle test, and
-                # stops bottle-wall glare from inflating the count when YOLO
-                # has already detected real pellets confidently.
-                if HYBRID_HSV and count < COUNT_WARN:
+                # Always run HSV alongside YOLO and take the larger count.
+                # Demo punch: HSV catches white pellets YOLO misses or has
+                # low confidence on, so visible pellets are reflected in
+                # the displayed count.
+                if HYBRID_HSV:
                     hsv_count, hsv_conf, annotated = self._infer_hsv(
                         annotated, overlay=True
                     )
@@ -414,17 +413,17 @@ class VisionAgent:
             # camera flare) that wouldn't be a single pellet anyway.
             if area > 5000:
                 continue
-            # Circularity filter — pellets are round-ish (>= 0.4).
-            # Long thin highlights or irregular splash patterns are rejected.
+            # Circularity filter — pellets are round-ish (>= 0.3 — relaxed
+            # so partial / overlapping pellets still pass).
             perimeter = cv2.arcLength(c, True)
             if perimeter == 0:
                 continue
             circularity = 4.0 * np.pi * area / (perimeter * perimeter)
-            if circularity < 0.4:
+            if circularity < 0.3:
                 continue
-            # Smaller divisor (600 vs 1200) so a clump of touching pellets
-            # still registers as multiple, even if morphology partially merges.
-            n = max(1, int(area // 600))
+            # Demo: each ~300 px² counts as one pellet — small clusters now
+            # multiply visibly, so the count climbs steeply with real pellets.
+            n = max(1, int(area // 300))
             count += n
             pellets.append((c, n))
 

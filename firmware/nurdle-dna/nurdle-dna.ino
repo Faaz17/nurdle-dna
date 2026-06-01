@@ -6,63 +6,72 @@
  *   S0 INIT   → S1 on boot complete
  *   S1 SysOk  → S2 on WARN, → S3 on CRIT
  *   S2 Causn  → S1 on CLEAR, → S3 on CRIT
- *   S3 ALRM   → S4 on RST button (latched — operator must reset)
+ *   S3 ALRM   → S4 on RST button OR Jetson "CLEAR" command (latched)
  *   S4 RSTIN  → S1 after reset sequence
  *
- * Inputs:  LDR (turbidity), MQ-135 (gas), HX711 (load cell), RST button
- *          + JSON commands from Jetson Nano over Serial
- * Outputs: MG996R servo valve, RGB LEDs, buzzer, 16x2 LCD, UV LED
- * Protocol: 115200 baud, JSON lines, 200 ms telemetry interval
+ * Protocol: 115200 baud, JSON lines, 200 ms telemetry interval.
  *
- * Libraries required (install via Library Manager):
- *   - Servo          (built-in)
- *   - Wire           (built-in)
- *   - LiquidCrystal_I2C  by Frank de Brabander
- *   - HX711          by Bogdan Necula / olkal
- *
- * Hardware notes:
- *   - LCD I2C address: most cheap backpacks are 0x27, but PCF8574A chips
- *     use 0x3F. If the LCD stays blank, change LCD_ADDR below to 0x3F.
- *   - Timer conflict: tone() and analogWrite(pin 3) share Timer 2 on Uno.
- *     We only ever set red LED to 0 or 255, so PWM-collapse is harmless,
- *     but don't introduce mid-range values on pin 3 while buzzer is active.
- *   - HX711 SCALE_FACTOR must be calibrated with a known weight. The 420.0
- *     default is a starting point only — see calibration procedure in
- *     Deliverable 5 report.
+ * Build profile: hardware presence flags below let you compile against a
+ * partial breadboard. Set the HAS_* flag to 1 as each component is wired.
+ * Anything missing is silently skipped — no floating-pin noise, no I2C hang.
  */
 
 #include <Servo.h>
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
-#include <HX711.h>
 
-// ─── Pin map ────────────────────────────────────────────────────
-#define LDR_PIN       A0
-#define GAS_PIN       A1
-#define RST_BTN_PIN   2    // active LOW (INPUT_PULLUP)
-#define UV_LED_PIN    7
-#define BUZZER_PIN    8
-#define SERVO_PIN     9
-#define LED_RED_PIN   3    // PWM
-#define LED_GREEN_PIN 5    // PWM
-#define LED_BLUE_PIN  6    // PWM
-#define HX711_DOUT    4
-#define HX711_CLK     10
+// ─── HARDWARE PRESENCE FLAGS ────────────────────────────────────
+// Flip to 1 as each component is wired up. The sketch skips disabled
+// components entirely (no floating analog reads, no I2C calls, etc).
+#define HAS_LDR             0   // turbidity LDR on A0
+#define HAS_GAS             1   // MQ gas sensor on A1
+#define HAS_CHEM            0   // potentiometer on A2
+#define HAS_HX711           0   // load cell (HX711) on D3/D4
+#define HAS_LCD             0   // I2C 16×2 LCD on A4/A5
+#define HAS_RESET_BUTTON    1   // push-button on D2
+#define HAS_SERVO           1   // MG996R valve servo on D9
 
-// ─── Thresholds ──────────────────────────────────────────────────
-#define LDR_WARN_THRESH   600     // raw ADC (0-1023) — lower = cloudier water
-#define LDR_CRIT_THRESH   750     // raw ADC
-#define GAS_WARN_THRESH   300     // raw ADC — calibrate to your MQ-135 R0 in clean air
-#define GAS_CRIT_THRESH   600     // raw ADC — see datasheet ppm conversion curve
-#define DEBOUNCE_HITS     3       // consecutive readings before FSM transition
-#define SCALE_FACTOR      420.0   // HX711 calibration — TUNE with known weight on breadboard
+// Buzzer output mode:
+//   0 → real piezo buzzer (tone())
+//   1 → using a blue LED as a visual indicator instead
+#define BUZZER_IS_LED       1
+
+#if HAS_LCD
+  #include <Wire.h>
+  #include <LiquidCrystal_I2C.h>
+#endif
+
+#if HAS_HX711
+  #include <HX711.h>
+#endif
+
+// ─── Pin map (matches the wiring guide) ─────────────────────────
+#define LDR_PIN          A0
+#define GAS_PIN          A1
+#define CHEM_PIN         A2
+#define RST_BTN_PIN      2     // active HIGH, external 10k pull-down
+#define HX711_DOUT       3
+#define HX711_CLK        4
+#define LED_GREEN_PIN    5     // Normal / S1
+#define LED_YELLOW_PIN   6     // Caution / S2
+#define LED_RED_PIN      7     // Alarm / S3
+#define BUZZER_PIN       8     // piezo, or blue indicator LED
+#define SERVO_PIN        9
+
+// ─── Thresholds (raw 10-bit ADC, 0–1023) ─────────────────────────
+#define LDR_WARN_THRESH   500
+#define LDR_CRIT_THRESH   800
+// Gas thresholds — calibrated for this specific sensor + room (post-warmup):
+// idle ~300, breath ~400, lighter spike >800.
+#define GAS_WARN_THRESH   380
+#define GAS_CRIT_THRESH   550
+#define CHEM_CRIT_THRESH  900
+#define DEBOUNCE_HITS     3
+#define SCALE_FACTOR      420.0
 #define TARE_DELAY_MS     3000
-#define LCD_ADDR          0x27    // try 0x3F if your LCD stays blank
+#define LCD_ADDR          0x27   // try 0x3F if LCD stays blank
 
 // ─── Timing ──────────────────────────────────────────────────────
-#define SENSOR_INTERVAL_MS 100    // read sensors every 100 ms
-#define SERIAL_INTERVAL_MS 200    // send telemetry every 200 ms
-#define UV_PULSE_MS        200    // UV LED on for 200 ms on each trigger
+#define SENSOR_INTERVAL_MS 100
+#define SERIAL_INTERVAL_MS 200
 
 // ─── Servo positions ─────────────────────────────────────────────
 #define VALVE_OPEN   0
@@ -72,28 +81,43 @@
 enum State { S0_INIT, S1_SYSOK, S2_CAUTION, S3_ALARM, S4_RESET };
 
 // ─── Globals ─────────────────────────────────────────────────────
-Servo valve;
-LiquidCrystal_I2C lcd(LCD_ADDR, 16, 2);
-HX711 scale;
+#if HAS_SERVO
+  Servo valve;
+#endif
 
-State   currentState  = S0_INIT;
-bool    valveOpen     = true;
+#if HAS_LCD
+  LiquidCrystal_I2C lcd(LCD_ADDR, 16, 2);
+#endif
 
-int     ldrVal        = 0;
-int     gasVal        = 0;
-float   loadGrams     = 0.0;
+#if HAS_HX711
+  HX711 scale;
+#endif
 
-int     warnHits      = 0;
-int     critHits      = 0;
-int     clearHits     = 0;
+State   currentState = S0_INIT;
+bool    valveOpen    = true;
 
-bool    jetsonCrit    = false;
-bool    jetsonWarn    = false;
+int     ldrVal       = 0;
+int     gasVal       = 0;
+int     chemVal      = 0;
+float   loadGrams    = 0.0;
 
-unsigned long lastSensor  = 0;
-unsigned long lastSerial  = 0;
-unsigned long uvOffTime   = 0;
-bool          uvActive    = false;
+int     warnHits     = 0;
+int     critHits     = 0;
+int     clearHits    = 0;
+
+bool    jetsonCrit   = false;
+bool    jetsonWarn   = false;
+bool    jetsonReset  = false;   // serial-driven reset request (used when no physical button)
+
+unsigned long lastSensor       = 0;
+unsigned long lastSerial       = 0;
+unsigned long resetCooldownEnd = 0;   // millis() when the post-reset cooldown expires
+
+// Post-reset cooldown: after the operator presses reset, ignore all alarm
+// sources (sensors AND Jetson commands) for this many milliseconds. Gives
+// the operator a window to physically remove the contamination before the
+// system auto-re-alarms.
+#define RESET_COOLDOWN_MS  5000
 
 String serialBuf = "";
 
@@ -104,33 +128,39 @@ void setup() {
   Serial.begin(115200);
 
   // GPIO
-  pinMode(RST_BTN_PIN, INPUT_PULLUP);
-  pinMode(UV_LED_PIN,  OUTPUT);
-  pinMode(BUZZER_PIN,  OUTPUT);
-  pinMode(LED_RED_PIN,   OUTPUT);
-  pinMode(LED_GREEN_PIN, OUTPUT);
-  pinMode(LED_BLUE_PIN,  OUTPUT);
+  pinMode(BUZZER_PIN,     OUTPUT);
+  pinMode(LED_GREEN_PIN,  OUTPUT);
+  pinMode(LED_YELLOW_PIN, OUTPUT);
+  pinMode(LED_RED_PIN,    OUTPUT);
 
-  // Servo
+#if HAS_RESET_BUTTON
+  pinMode(RST_BTN_PIN, INPUT);   // external pull-down, active HIGH
+#endif
+
+#if HAS_SERVO
   valve.attach(SERVO_PIN);
   openValve();
+#endif
 
-  // LCD
+#if HAS_LCD
   lcd.init();
   lcd.backlight();
   lcdPrint("NurdleDNA v1.0  ", "Initialising... ");
+#endif
 
-  // LEDs — all white during S0
-  setRGB(255, 255, 255);
+  // Lamp test — all three LEDs ON during S0
+  setLeds(true, true, true);
 
-  // HX711 calibrate + tare on boot
+#if HAS_HX711
   scale.begin(HX711_DOUT, HX711_CLK);
-  scale.set_scale(SCALE_FACTOR);     // converts raw counts to grams
+  scale.set_scale(SCALE_FACTOR);
   lcdPrint("NurdleDNA v1.0  ", "Taring scale... ");
   delay(TARE_DELAY_MS);
   if (scale.is_ready()) scale.tare();
+#else
+  delay(1500);   // short startup pause for the lamp test
+#endif
 
-  delay(500);
   enterState(S1_SYSOK);
 }
 
@@ -140,7 +170,7 @@ void setup() {
 void loop() {
   unsigned long now = millis();
 
-  // 1. Read sensors
+  // 1. Read sensors + run FSM
   if (now - lastSensor >= SENSOR_INTERVAL_MS) {
     lastSensor = now;
     readSensors();
@@ -154,58 +184,79 @@ void loop() {
   }
   parseSerialInput();
 
-  // 3. UV LED auto-off
-  if (uvActive && now >= uvOffTime) {
-    digitalWrite(UV_LED_PIN, LOW);
-    uvActive = false;
-  }
+  // 3. Reset path — physical button (if present) or serial CLEAR command
+  if (currentState == S3_ALARM) {
+    bool resetPressed = false;
 
-  // 4. Reset button — only effective in S3
-  if (currentState == S3_ALARM && digitalRead(RST_BTN_PIN) == LOW) {
-    delay(50);
-    if (digitalRead(RST_BTN_PIN) == LOW) {
+#if HAS_RESET_BUTTON
+    if (digitalRead(RST_BTN_PIN) == HIGH) {
+      delay(50);
+      if (digitalRead(RST_BTN_PIN) == HIGH) resetPressed = true;
+    }
+#endif
+
+    if (jetsonReset) {
+      resetPressed = true;
+      jetsonReset = false;
+    }
+
+    if (resetPressed) {
       enterState(S4_RESET);
       delay(1500);
       warnHits = critHits = clearHits = 0;
       jetsonCrit = jetsonWarn = false;
+      resetCooldownEnd = millis() + RESET_COOLDOWN_MS;
       enterState(S1_SYSOK);
     }
   }
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Sensor reading
+// Sensor reading — only reads connected sensors; others stay at 0
 // ─────────────────────────────────────────────────────────────────
 void readSensors() {
-  ldrVal = analogRead(LDR_PIN);
-  gasVal = analogRead(GAS_PIN);
+#if HAS_LDR
+  ldrVal  = analogRead(LDR_PIN);
+#endif
+#if HAS_GAS
+  gasVal  = analogRead(GAS_PIN);
+#endif
+#if HAS_CHEM
+  chemVal = analogRead(CHEM_PIN);
+#endif
+#if HAS_HX711
   if (scale.is_ready()) {
     float raw = scale.get_units(1);
     loadGrams = (raw < 0.0) ? 0.0 : raw;
   }
+#endif
 }
 
 // ─────────────────────────────────────────────────────────────────
-// FSM update (called every SENSOR_INTERVAL_MS)
+// FSM update
 // ─────────────────────────────────────────────────────────────────
 void updateFSM() {
-  // S3 is latched — only RST button exits
-  if (currentState == S3_ALARM) return;
+  if (currentState == S3_ALARM) return;   // S3 is latched
+  if (millis() < resetCooldownEnd) return; // post-reset cooldown — ignore all alarm sources
 
-  bool isCrit = (gasVal >= GAS_CRIT_THRESH || ldrVal >= LDR_CRIT_THRESH || jetsonCrit);
-  bool isWarn = (gasVal >= GAS_WARN_THRESH || ldrVal >= LDR_WARN_THRESH || jetsonWarn);
+  bool isCrit = (ldrVal  >= LDR_CRIT_THRESH  ||
+                 gasVal  >= GAS_CRIT_THRESH  ||
+                 chemVal >= CHEM_CRIT_THRESH ||
+                 jetsonCrit);
+
+  bool isWarn = (ldrVal >= LDR_WARN_THRESH ||
+                 gasVal >= GAS_WARN_THRESH ||
+                 jetsonWarn);
 
   if (isCrit) {
     critHits++;
-    warnHits  = 0;
-    clearHits = 0;
+    warnHits = clearHits = 0;
     if (critHits >= DEBOUNCE_HITS) {
       enterState(S3_ALARM);
     }
   } else if (isWarn) {
     warnHits++;
-    critHits  = 0;
-    clearHits = 0;
+    critHits = clearHits = 0;
     if (warnHits >= DEBOUNCE_HITS && currentState == S1_SYSOK) {
       enterState(S2_CAUTION);
     }
@@ -227,32 +278,30 @@ void enterState(State s) {
 
     case S1_SYSOK:
       openValve();
-      setRGB(0, 200, 0);
+      setLeds(true, false, false);
       buzzerOff();
       lcdPrint("Status: CLEAR   ", "Valve: OPEN     ");
       break;
 
     case S2_CAUTION:
       openValve();
-      setRGB(255, 140, 0);
+      setLeds(false, true, false);
       buzzerOff();
       lcdPrint("!! CAUTION !!   ", "Valve: OPEN     ");
-      pulseUV();
       break;
 
     case S3_ALARM:
       closeValve();
-      setRGB(255, 0, 0);
+      setLeds(false, false, true);
       buzzerOn();
       lcdPrint("!!! ALARM !!!   ", "Valve: CLOSED   ");
-      pulseUV();
       break;
 
     case S4_RESET:
       openValve();
-      setRGB(255, 255, 255);
+      setLeds(true, true, true);
       buzzerOff();
-      lcdPrint("Resetting...    ", "Press RST       ");
+      lcdPrint("Resetting...    ", "System OK soon  ");
       break;
 
     case S0_INIT:
@@ -263,34 +312,54 @@ void enterState(State s) {
 // ─────────────────────────────────────────────────────────────────
 // Actuator helpers
 // ─────────────────────────────────────────────────────────────────
-void openValve()  { valveOpen = true;  valve.write(VALVE_OPEN);   }
-void closeValve() { valveOpen = false; valve.write(VALVE_CLOSED); }
-
-void setRGB(uint8_t r, uint8_t g, uint8_t b) {
-  analogWrite(LED_RED_PIN,   r);
-  analogWrite(LED_GREEN_PIN, g);
-  analogWrite(LED_BLUE_PIN,  b);
+void openValve()  {
+  valveOpen = true;
+#if HAS_SERVO
+  valve.write(VALVE_OPEN);
+#endif
+}
+void closeValve() {
+  valveOpen = false;
+#if HAS_SERVO
+  valve.write(VALVE_CLOSED);
+#endif
 }
 
-void buzzerOn()  { tone(BUZZER_PIN, 1000); }
-void buzzerOff() { noTone(BUZZER_PIN); }
+void setLeds(bool g, bool y, bool r) {
+  digitalWrite(LED_GREEN_PIN,  g ? HIGH : LOW);
+  digitalWrite(LED_YELLOW_PIN, y ? HIGH : LOW);
+  digitalWrite(LED_RED_PIN,    r ? HIGH : LOW);
+}
+
+void buzzerOn() {
+#if BUZZER_IS_LED
+  digitalWrite(BUZZER_PIN, HIGH);
+#else
+  tone(BUZZER_PIN, 1000);
+#endif
+}
+void buzzerOff() {
+#if BUZZER_IS_LED
+  digitalWrite(BUZZER_PIN, LOW);
+#else
+  noTone(BUZZER_PIN);
+#endif
+}
 
 void lcdPrint(const char* l1, const char* l2) {
+#if HAS_LCD
   lcd.setCursor(0, 0); lcd.print(l1);
   lcd.setCursor(0, 1); lcd.print(l2);
-}
-
-void pulseUV() {
-  digitalWrite(UV_LED_PIN, HIGH);
-  uvActive  = true;
-  uvOffTime = millis() + UV_PULSE_MS;
+#else
+  (void)l1; (void)l2;   // no-op when LCD is absent
+#endif
 }
 
 // ─────────────────────────────────────────────────────────────────
 // Serial — telemetry output (Jetson reads this)
+// {"fsm_state":"S1","valve":"OPEN","ldr":0,"gas":380,"chem":0,"load_g":0.0}
 // ─────────────────────────────────────────────────────────────────
 void sendTelemetry() {
-  // {"fsm_state":"S1","valve":"OPEN","ldr":542,"gas":380,"load_g":3.4}
   Serial.print(F("{\"fsm_state\":\""));
   Serial.print(stateLabel());
   Serial.print(F("\",\"valve\":\""));
@@ -299,6 +368,8 @@ void sendTelemetry() {
   Serial.print(ldrVal);
   Serial.print(F(",\"gas\":"));
   Serial.print(gasVal);
+  Serial.print(F(",\"chem\":"));
+  Serial.print(chemVal);
   Serial.print(F(",\"load_g\":"));
   Serial.print(loadGrams, 1);
   Serial.println(F("}"));
@@ -318,6 +389,7 @@ const __FlashStringHelper* stateLabel() {
 // ─────────────────────────────────────────────────────────────────
 // Serial — command input (Jetson sends this)
 // {"state":"WARN|CRIT|CLEAR","confidence":0.85,"count":12}
+// CLEAR in S3 also acts as a soft reset (since no physical button yet).
 // ─────────────────────────────────────────────────────────────────
 void parseSerialInput() {
   while (Serial.available()) {
@@ -333,6 +405,12 @@ void parseSerialInput() {
 
 void processJetsonCmd(const String& cmd) {
   if (cmd.length() < 5) return;
+
+  // Stricter parse: only accept commands that look like JSON ({"state":...}).
+  // Avoids false matches from any garbage that happens to contain "WARN"
+  // or "CRIT" (we saw exactly this when ModemManager probed the port).
+  if (cmd.indexOf(F("{\"state\":")) < 0) return;
+
   if (cmd.indexOf(F("\"CRIT\"")) >= 0) {
     jetsonCrit = true;
     jetsonWarn = false;
@@ -340,6 +418,9 @@ void processJetsonCmd(const String& cmd) {
     jetsonWarn = true;
     jetsonCrit = false;
   } else if (cmd.indexOf(F("\"CLEAR\"")) >= 0) {
+    // CLEAR only clears the Jetson override flags. It does NOT auto-reset
+    // a latched S3 alarm — that requires the physical operator button so
+    // that gas / LDR / chem-driven alarms can't be silenced by the camera.
     jetsonCrit = false;
     jetsonWarn = false;
   }

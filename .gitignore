@@ -31,6 +31,10 @@ jetson/config_local.py
 # Jetson model weights
 jetson/models/
 
+# Jetson Orin SD-card image (~11 GB; download from NVIDIA — see Jetson Start/README.md)
+Jetson Start/*.zip
+Jetson Start/*.img
+
 # OS junk
 .DS_Store
 Thumbs.db

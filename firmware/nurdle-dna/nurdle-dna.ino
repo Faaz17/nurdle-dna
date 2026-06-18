@@ -388,8 +388,8 @@ const __FlashStringHelper* stateLabel() {
 
 // ─────────────────────────────────────────────────────────────────
 // Serial — command input (Jetson sends this)
-// {"state":"WARN|CRIT|CLEAR","confidence":0.85,"count":12}
-// CLEAR in S3 also acts as a soft reset (since no physical button yet).
+// {"state":"WARN|CRIT|CLEAR|RESET","confidence":0.85,"count":12}
+// RESET is a soft operator reset (dashboard button) — clears a latched S3.
 // ─────────────────────────────────────────────────────────────────
 void parseSerialInput() {
   while (Serial.available()) {
@@ -410,6 +410,14 @@ void processJetsonCmd(const String& cmd) {
   // Avoids false matches from any garbage that happens to contain "WARN"
   // or "CRIT" (we saw exactly this when ModemManager probed the port).
   if (cmd.indexOf(F("{\"state\":")) < 0) return;
+
+  if (cmd.indexOf(F("\"RESET\"")) >= 0) {
+    // Remote operator reset from the dashboard (Jetson → serial). Acts as a
+    // soft equivalent of the physical RST button: the loop() reset path picks
+    // this up and steps a latched S3 alarm through S4 back to S1.
+    jetsonReset = true;
+    return;
+  }
 
   if (cmd.indexOf(F("\"CRIT\"")) >= 0) {
     jetsonCrit = true;

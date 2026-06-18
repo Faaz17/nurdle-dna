@@ -78,6 +78,24 @@ class SerialBridge:
         except serial.SerialException as exc:
             print("[serial] Send error:", exc)
 
+    def send_reset(self) -> bool:
+        """Send a soft-reset command to clear a latched S3 alarm.
+
+        Mirrors the physical RST button. Returns True if it was written to a
+        connected Arduino, False in simulation mode (no serial link).
+        """
+        if not self.connected or not self._serial or not self._serial.is_open:
+            return False
+        msg = json.dumps({"state": "RESET"}) + "\n"
+        try:
+            with self._lock:
+                self._serial.write(msg.encode("ascii"))
+            print("[serial] RESET command sent to Arduino")
+            return True
+        except serial.SerialException as exc:
+            print("[serial] Reset send error:", exc)
+            return False
+
     def get_telemetry(self) -> dict:
         """Return a snapshot of the latest telemetry from the Arduino."""
         return dict(self.telemetry)

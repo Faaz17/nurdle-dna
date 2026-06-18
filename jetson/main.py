@@ -50,7 +50,8 @@ def main():
 
     cloud.start(get_state,
                 get_frame_fn=vision.get_frame,
-                get_breakdown_fn=vision.get_breakdown)
+                get_breakdown_fn=vision.get_breakdown,
+                send_reset_fn=bridge.send_reset)
 
     print("[main] All subsystems running. Press Ctrl+C to stop.\n")
 

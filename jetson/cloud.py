@@ -27,6 +27,12 @@ from config import (
 )
 
 
+# Seconds to suppress vision-derived alarms after a remote reset, so the
+# dashboard reset visibly clears the alarm even with no Arduino attached.
+# Matches the firmware's RESET_COOLDOWN_MS (5000 ms).
+REMOTE_RESET_COOLDOWN = 5
+
+
 def _iso_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -41,6 +47,8 @@ class CloudPublisher:
         self._get_state         = None
         self._get_frame_fn      = None
         self._get_breakdown_fn  = None
+        self._send_reset_fn     = None    # forwards a dashboard reset to the Arduino
+        self._reset_cooldown_until = 0.0  # suppress derived alarm after a remote reset
         self._last_heartbeat    = 0.0
         self._last_snapshot     = 0.0
         self._last_status       = "OK"
@@ -57,21 +65,29 @@ class CloudPublisher:
             app      = pyrebase.initialize_app(FIREBASE_CONFIG)
             self._db = app.database()
             print("[cloud] Firebase connected →", FIREBASE_CONFIG["databaseURL"])
+            # Clear any stale dashboard command so we don't fire a reset on boot.
+            try:
+                self._db.child("devices").child(DEVICE_ID).child("command").remove()
+            except Exception:
+                pass
         except Exception as exc:
             print("[cloud] Firebase init failed:", exc)
 
     # ─── Public API ──────────────────────────────────────────────
 
-    def start(self, get_state_fn, get_frame_fn=None, get_breakdown_fn=None):
+    def start(self, get_state_fn, get_frame_fn=None, get_breakdown_fn=None,
+              send_reset_fn=None):
         """
         get_state_fn() must return:
             (vision_state: str, telemetry: dict, count: int, confidence: float)
         get_frame_fn() optionally returns the latest annotated BGR frame, or None.
         get_breakdown_fn() optionally returns a {class_name: count} dict.
+        send_reset_fn() optionally forwards a dashboard reset to the Arduino.
         """
         self._get_state        = get_state_fn
         self._get_frame_fn     = get_frame_fn
         self._get_breakdown_fn = get_breakdown_fn
+        self._send_reset_fn    = send_reset_fn
         self._running          = True
         self._thread           = threading.Thread(target=self._loop, name="cloud", daemon=True)
         self._thread.start()
@@ -93,9 +109,16 @@ class CloudPublisher:
         vision_state, telemetry, count, confidence = self._get_state()
         now = time.time()
 
+        # Handle a dashboard reset request before computing state this tick.
+        self._check_remote_reset()
+
         arduino_fsm = telemetry.get("fsm_state")
         if arduino_fsm and arduino_fsm not in ("", "S0"):
             fsm = arduino_fsm                     # Real Arduino state wins
+        elif now < self._reset_cooldown_until:
+            # Remote reset just issued and no Arduino to latch — force CLEAR so
+            # the dashboard alarm visibly resets even in simulation mode.
+            fsm = "S1"
         else:
             # No Arduino — derive FSM from vision so the website still escalates
             fsm = {"CRIT": "S3", "WARN": "S2", "CLEAR": "S1"}.get(vision_state, "S1")
@@ -146,6 +169,37 @@ class CloudPublisher:
         if STREAM_CAMERA and (now - self._last_snapshot) >= STREAM_INTERVAL:
             self._publish_snapshot()
             self._last_snapshot = now
+
+    # ─── Dashboard → device commands ─────────────────────────────
+
+    def _check_remote_reset(self):
+        """Poll /devices/<id>/command/reset; act on a dashboard reset request.
+
+        The website writes a timestamp there when the operator clicks Reset.
+        We forward it to the Arduino (real latch clear), start a local cooldown
+        (so sim-mode alarms also clear), then remove the flag so it fires once.
+        """
+        if not self._db:
+            return
+        try:
+            req = (self._db.child("devices").child(DEVICE_ID)
+                       .child("command").child("reset").get().val())
+        except Exception:
+            return
+
+        if not req:
+            return
+
+        print("[cloud] Remote reset requested from dashboard")
+        if self._send_reset_fn:
+            self._send_reset_fn()                       # clear a real latched alarm
+        self._reset_cooldown_until = time.time() + REMOTE_RESET_COOLDOWN
+
+        try:
+            (self._db.child("devices").child(DEVICE_ID)
+                 .child("command").child("reset").remove())
+        except Exception:
+            pass
 
     # ─── Firebase writes ─────────────────────────────────────────
 

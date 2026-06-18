@@ -34,6 +34,10 @@
     lastSync: 0,
   };
 
+  // Set once Firebase is live — lets doReset() push a remote reset command
+  // to the device. Null in simulation mode.
+  let fbCommandRef = null;
+
   // ────────────────────────────────────────────────────────────
   // DOM
   // ────────────────────────────────────────────────────────────
@@ -369,6 +373,16 @@
       logEvent('info', 'RST pressed — no alarm to clear');
       return;
     }
+
+    // Live mode: send a remote reset command to the device. The Jetson picks
+    // this up, forwards RESET to the Arduino, and the latched S3 clears — the
+    // device's own Firebase update then drives the dashboard back to S1.
+    if (fbCommandRef) {
+      fbCommandRef.child('reset').set(Date.now());
+      logEvent('ok', 'Remote reset sent to device — clearing latched alarm');
+      return;
+    }
+
     setState('S4', 'operator pressed RST');
     setTimeout(() => {
       sim.alarmLatched = false;
@@ -442,6 +456,9 @@
     const db       = firebase.database(fbApp);
     const devRef   = db.ref('devices/NURDLE-001');
     const evtRef   = db.ref('events');
+
+    // Enable the dashboard → device reset path now that we're live.
+    fbCommandRef = db.ref('devices/NURDLE-001/command');
 
     // ── Firebase reachability (logged, but does NOT drive netLed) ──
     // The netLed/netLabel are driven by actual device data freshness

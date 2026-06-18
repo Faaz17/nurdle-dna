@@ -3,7 +3,8 @@
 # contains real Firebase credentials (it is listed in .gitignore).
 
 # ─── Serial (Arduino) ────────────────────────────────────────────
-SERIAL_PORT    = "/dev/ttyUSB0"   # or /dev/ttyACM0 — check with: ls /dev/tty*
+SERIAL_PORT    = "/dev/ttyACM0"   # preferred port; serial_bridge auto-falls-back
+                                  # to any /dev/ttyACM* or /dev/ttyUSB* if absent
 SERIAL_BAUD    = 115200
 SERIAL_TIMEOUT = 1.0              # seconds
 

@@ -8,6 +8,7 @@ Arduino → Jetson  (every 200 ms):
     {"fsm_state":"S1","valve":"OPEN","ldr":542,"gas":380,"load_g":3.4}
 """
 
+import glob
 import json
 import threading
 import time
@@ -28,6 +29,18 @@ _DEFAULT_TELEMETRY = {
 }
 
 
+def _candidate_ports():
+    """Ports to try, in order: the configured one first, then any ACM/USB
+    serial devices present. Makes the link self-heal across boards that
+    enumerate as /dev/ttyACM* (Uno) vs /dev/ttyUSB* (Nano clone)."""
+    ordered = [SERIAL_PORT] + sorted(glob.glob("/dev/ttyACM*")) + sorted(glob.glob("/dev/ttyUSB*"))
+    seen = []
+    for p in ordered:
+        if p and p not in seen:
+            seen.append(p)
+    return seen
+
+
 class SerialBridge:
     """Thread-safe serial link to the Arduino."""
 
@@ -42,21 +55,30 @@ class SerialBridge:
     # ─── Public API ──────────────────────────────────────────────
 
     def start(self):
-        try:
-            self._serial = serial.Serial(
-                SERIAL_PORT, SERIAL_BAUD,
-                timeout=SERIAL_TIMEOUT
-            )
+        port = self._open_first_available()
+        if port:
             time.sleep(2)      # wait for Arduino bootloader to finish
             self.connected = True
-            print(f"[serial] Connected: {SERIAL_PORT} @ {SERIAL_BAUD}")
-        except serial.SerialException as exc:
-            print(f"[serial] WARNING — could not open {SERIAL_PORT}: {exc}")
+            print(f"[serial] Connected: {port} @ {SERIAL_BAUD}")
+        else:
+            print(f"[serial] WARNING — no Arduino found on {_candidate_ports()}")
             print("[serial] Continuing in simulation mode (no Arduino output)")
 
         self._running = True
         self._thread  = threading.Thread(target=self._read_loop, name="serial", daemon=True)
         self._thread.start()
+
+    def _open_first_available(self):
+        """Try each candidate port; on success store the Serial and return the
+        port name, else return None. Does NOT sleep for the bootloader — the
+        caller decides whether to wait."""
+        for port in _candidate_ports():
+            try:
+                self._serial = serial.Serial(port, SERIAL_BAUD, timeout=SERIAL_TIMEOUT)
+                return port
+            except (serial.SerialException, OSError):
+                continue
+        return None
 
     def stop(self):
         self._running = False
@@ -142,12 +164,11 @@ class SerialBridge:
         try:
             if self._serial and self._serial.is_open:
                 self._serial.close()
-            self._serial = serial.Serial(
-                SERIAL_PORT, SERIAL_BAUD, timeout=SERIAL_TIMEOUT
-            )
+        except Exception:
+            pass
+        port = self._open_first_available()
+        if port:
             time.sleep(2)   # wait for Arduino bootloader
             self.connected = True
-            print(f"[serial] (Re)connected: {SERIAL_PORT}")
-        except (serial.SerialException, OSError):
-            # quiet — printed once already on initial failure
-            pass
+            print(f"[serial] (Re)connected: {port}")
+        # else: stay quiet — initial failure was already printed

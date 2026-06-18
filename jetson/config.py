@@ -34,11 +34,11 @@ YOLO_IOU   = 0.45    # NMS IoU threshold
 HYBRID_HSV = True
 
 # ─── Nurdle count → FSM state ────────────────────────────────────
-# Alarm only fires at 25 detected pellets. Background "noise" classes
-# (Background material, Air bubble) are excluded from the count in vision.py,
-# so the idle count stays low and a remote reset can actually hold.
-COUNT_WARN = 12   # caution band
-COUNT_CRIT = 25   # ALARM threshold — needs 25 pellets in view
+# Bands:  <10 green (CLEAR)  ·  10–15 yellow (WARN)  ·  16+ red (ALARM)
+# Background "noise" classes (Background material, Air bubble) are excluded
+# from the count in vision.py, so the idle count stays below 10 = green.
+COUNT_WARN = 10   # caution starts at 10 (below 10 = green/CLEAR)
+COUNT_CRIT = 16   # ALARM fires above 15 (16+ pellets in view)
 
 # ─── Firebase ────────────────────────────────────────────────────
 # Replace REPLACE_ME values after creating the Firebase project.

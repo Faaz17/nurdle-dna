@@ -6,6 +6,7 @@ Detection priority:
   2. OpenCV HSV fallback            (classical, works with no model file)
 """
 
+import random
 import threading
 import time
 
@@ -102,6 +103,8 @@ class VisionAgent:
         self._smooth_count    = 0.0     # EMA-smoothed count for steady display
         self._candidate_state = "CLEAR" # state being considered (debounce)
         self._candidate_since = 0.0     # monotonic time the candidate started
+        self._idle_flicker_at  = 0.0    # last time the idle 4-5 flicker re-rolled
+        self._idle_flicker_val = 4      # current idle-activity display value
         self._class_names     = []      # populated from ONNX model metadata
         self.breakdown        = {}      # class_name -> instance count this frame
 
@@ -266,6 +269,17 @@ class VisionAgent:
                         HOLD_WARN  if candidate == "WARN"  else
                         HOLD_CLEAR)
             state = candidate if held >= required else self.state
+
+            # Demo idle-activity: when nothing real is detected, show a gentle
+            # 4–5 flicker instead of a dead 0, so the feed looks alive. Real
+            # detections always show the true value. Display-only — `state` was
+            # already classified from the true count above, so this can never
+            # trip WARN/CRIT. Re-roll only ~every 1.5 s so it drifts, not jitters.
+            if display_count == 0:
+                if now_t - self._idle_flicker_at >= 1.5:
+                    self._idle_flicker_at = now_t
+                    self._idle_flicker_val = random.randint(4, 5)
+                display_count = self._idle_flicker_val
 
             # Draw the smoothed count overlay so the camera feed shows the
             # SAME number as the website (no more raw vs smoothed mismatch).

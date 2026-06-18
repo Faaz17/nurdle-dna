@@ -27,7 +27,7 @@
 #define HAS_HX711           0   // load cell (HX711) on D3/D4
 #define HAS_LCD             0   // I2C 16×2 LCD on A4/A5
 #define HAS_RESET_BUTTON    1   // push-button on D2
-#define HAS_SERVO           1   // MG996R valve servo on D9
+#define HAS_SERVO           0   // MG996R valve servo on D9 (removed from breadboard)
 
 // Buzzer output mode:
 //   0 → real piezo buzzer (tone())

@@ -290,6 +290,12 @@ class VisionAgent:
                 self.confidence = conf
                 self.state      = state
                 self.frame      = annotated
+                # HSV-detected pellets have no YOLO class, and the YOLO noise
+                # classes are excluded — so the breakdown can be empty even with
+                # a real count. Label those generically as "Nurdle" so the
+                # dashboard shows a chip instead of "awaiting classification…".
+                if display_count > 0 and not self.breakdown:
+                    self.breakdown = {"Nurdle": display_count}
 
     # ─── YOLOv8 ONNX inference ───────────────────────────────────
 

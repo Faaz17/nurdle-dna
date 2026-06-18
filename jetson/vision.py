@@ -26,6 +26,12 @@ except ImportError:
 # YOLOv8 ONNX input size (model was exported at 640×640)
 _INFER_SIZE = 640
 
+# Model classes that are NOT pellets — background/medium artefacts the model
+# fires on (the bottle, water, glare). Excluded from the count, the per-class
+# breakdown, and the on-frame boxes so they can never trip the alarm.
+# Matched case-insensitively against the model's class names.
+_NOISE_CLASSES = {"background material", "air bubble"}
+
 # ─── Annotation styling (BGR colours, match website teal theme) ──
 _TEAL    = (223, 243, 91)    # #5bf3df — primary accent
 _AMBER   = (102, 209, 255)   # #ffd166 — emphasis
@@ -330,14 +336,21 @@ class VisionAgent:
 
         indices = np.array(indices).flatten()
 
-        # ROI filter — keep only detections whose centre lies inside the ROI.
+        # ROI filter — keep only detections whose centre lies inside the ROI
+        # AND whose class is a real pellet (not a background/noise class).
         kept = []
         for i in indices:
             bx, by, bw_i, bh_i = boxes_xywh[i]
             cx = bx + bw_i / 2
             cy = by + bh_i / 2
-            if roi_x1 <= cx <= roi_x2 and roi_y1 <= cy <= roi_y2:
-                kept.append(i)
+            if not (roi_x1 <= cx <= roi_x2 and roi_y1 <= cy <= roi_y2):
+                continue
+            cls = int(cls_ids_k[i])
+            name = (self._class_names[cls]
+                    if cls < len(self._class_names) else f"Class {cls}")
+            if name.strip().lower() in _NOISE_CLASSES:
+                continue   # background material / air bubble — not a pellet
+            kept.append(i)
 
         if not kept:
             with self._lock:

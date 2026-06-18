@@ -33,11 +33,11 @@ YOLO_IOU   = 0.45    # NMS IoU threshold
 HYBRID_HSV = True
 
 # ─── Nurdle count → FSM state ────────────────────────────────────
-# Testing: raised so background "Background material" noise (peaks ~20)
-# does NOT trip the alarm — only a real spill of 30+ pellets does. This lets
-# a remote reset actually hold instead of immediately re-alarming.
-COUNT_WARN = 20   # caution band — above the background noise floor
-COUNT_CRIT = 30   # ALARM threshold — needs 30 pellets in view
+# Alarm only fires at 25 detected pellets. Background "noise" classes
+# (Background material, Air bubble) are excluded from the count in vision.py,
+# so the idle count stays low and a remote reset can actually hold.
+COUNT_WARN = 12   # caution band
+COUNT_CRIT = 25   # ALARM threshold — needs 25 pellets in view
 
 # ─── Firebase ────────────────────────────────────────────────────
 # Replace REPLACE_ME values after creating the Firebase project.

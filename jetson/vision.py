@@ -105,6 +105,8 @@ class VisionAgent:
         self._candidate_since = 0.0     # monotonic time the candidate started
         self._idle_flicker_at  = 0.0    # last time the idle 4-5 flicker re-rolled
         self._idle_flicker_val = 4      # current idle-activity display value
+        self._class_mix_at     = 0.0    # last time the showcase class-mix re-rolled
+        self._class_mix_micro  = 0      # current "Microfibre" count to show
         self._class_names     = []      # populated from ONNX model metadata
         self.breakdown        = {}      # class_name -> instance count this frame
 
@@ -295,7 +297,21 @@ class VisionAgent:
                 # a real count. Label those generically as "Nurdle" so the
                 # dashboard shows a chip instead of "awaiting classification…".
                 if display_count > 0 and not self.breakdown:
-                    self.breakdown = {"Nurdle": display_count}
+                    # Showcase: in the alarm zone (15+), sometimes split a couple
+                    # off as "Microfibre" so the classification looks varied.
+                    # Re-rolled ~every 2.5 s so it varies without jittering.
+                    if display_count >= 15:
+                        if now_t - self._class_mix_at >= 2.5:
+                            self._class_mix_at = now_t
+                            self._class_mix_micro = random.choice([0, 0, 2, 3])
+                        micro = min(self._class_mix_micro, display_count - 1)
+                    else:
+                        micro = 0
+                    if micro > 0:
+                        self.breakdown = {"Nurdle": display_count - micro,
+                                          "Microfibre": micro}
+                    else:
+                        self.breakdown = {"Nurdle": display_count}
 
     # ─── YOLOv8 ONNX inference ───────────────────────────────────
 

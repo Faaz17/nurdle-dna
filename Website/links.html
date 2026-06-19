@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NurdleDNA — All Links</title>
+  <meta name="description" content="NurdleDNA — all project links: live dashboard, 3D digital twin, CAD model, video, repo and team." />
+  <style>
+    :root {
+      --bg:#070d12; --panel:#0e1820; --panel-2:#12222c;
+      --line:#1d3340; --teal:#5fd6ff; --teal-2:#36e0c8;
+      --text:#e8f3f7; --muted:#8aa0ad;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      background:
+        radial-gradient(1200px 600px at 50% -10%, rgba(54,224,200,.12), transparent 60%),
+        radial-gradient(900px 500px at 100% 110%, rgba(95,214,255,.10), transparent 55%),
+        var(--bg);
+      color:var(--text); min-height:100vh;
+      display:flex; flex-direction:column; align-items:center;
+      padding:36px 18px 56px;
+    }
+    .wrap { width:100%; max-width:440px; }
+    header { text-align:center; margin-bottom:26px; }
+    .logo {
+      width:64px; height:64px; margin:0 auto 14px; border-radius:18px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:800; font-size:30px; color:#04222b;
+      background:linear-gradient(135deg,var(--teal-2),var(--teal));
+      box-shadow:0 8px 30px rgba(54,224,200,.35);
+    }
+    h1 { font-size:1.6rem; letter-spacing:.5px; }
+    h1 span { color:var(--teal); }
+    .tag { color:var(--muted); font-size:.9rem; margin-top:6px; font-style:italic; }
+    .links { display:flex; flex-direction:column; gap:12px; margin-top:8px; }
+    a.link {
+      display:flex; align-items:center; gap:14px; text-decoration:none;
+      background:linear-gradient(180deg,var(--panel-2),var(--panel));
+      border:1px solid var(--line); border-radius:14px;
+      padding:14px 16px; color:var(--text);
+      transition:transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+    }
+    a.link:hover, a.link:focus-visible {
+      transform:translateY(-2px); border-color:var(--teal);
+      box-shadow:0 6px 22px rgba(95,214,255,.18); outline:none;
+    }
+    .ico { font-size:1.4rem; width:30px; text-align:center; flex:0 0 auto; }
+    .meta { display:flex; flex-direction:column; }
+    .meta b { font-size:1rem; }
+    .meta small { color:var(--muted); font-size:.78rem; }
+    .arrow { margin-left:auto; color:var(--teal); font-size:1.1rem; }
+    .section-label {
+      color:var(--muted); font-size:.72rem; letter-spacing:.14em;
+      text-transform:uppercase; margin:22px 4px 4px;
+    }
+    .todo { opacity:.6; }
+    .todo .arrow::after { content:" • edit me"; font-size:.62rem; color:var(--muted); }
+    footer { text-align:center; color:var(--muted); font-size:.76rem; margin-top:30px; line-height:1.6; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">N</div>
+      <h1>Nurdle<span>DNA</span></h1>
+      <p class="tag">"Watch every stream, all the time."</p>
+    </header>
+
+    <div class="section-label">Explore the project</div>
+    <nav class="links">
+      <a class="link" href="./index.html">
+        <span class="ico">🌐</span>
+        <span class="meta"><b>Project Website</b><small>Overview, problem &amp; solution</small></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="link" href="./live-demo.html">
+        <span class="ico">📊</span>
+        <span class="meta"><b>Live Dashboard</b><small>Real-time sensor feed &amp; alarm state</small></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="link" href="./digital-twin.html">
+        <span class="ico">🧊</span>
+        <span class="meta"><b>3D Digital Twin</b><small>Interactive 3D device model</small></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="link" href="./cad-model.html">
+        <span class="ico">🛠️</span>
+        <span class="meta"><b>CAD Model</b><small>Engineering design (Fusion 360)</small></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="link" href="./events.html">
+        <span class="ico">📋</span>
+        <span class="meta"><b>Event Log</b><small>Audit trail of detections</small></span>
+        <span class="arrow">→</span>
+      </a>
+    </nav>
+
+    <div class="section-label">Media &amp; code</div>
+    <nav class="links">
+      <a class="link todo" href="REPLACE_WITH_VIDEO_URL">
+        <span class="ico">🎬</span>
+        <span class="meta"><b>Intro Video</b><small>Our project film</small></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="link" href="https://github.com/Faaz17/nurdle-dna" target="_blank" rel="noopener">
+        <span class="ico">💻</span>
+        <span class="meta"><b>GitHub Repo</b><small>Firmware, Jetson agent &amp; site</small></span>
+        <span class="arrow">→</span>
+      </a>
+    </nav>
+
+    <div class="section-label">The team — Arc Tech</div>
+    <nav class="links">
+      <a class="link todo" href="REPLACE_WITH_LINKEDIN_HAAZIQ" target="_blank" rel="noopener">
+        <span class="ico">👤</span>
+        <span class="meta"><b>Muhammad Haaziq</b><small>Design Lead</small></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="link todo" href="REPLACE_WITH_LINKEDIN_FAAZ" target="_blank" rel="noopener">
+        <span class="ico">👤</span>
+        <span class="meta"><b>Faaz Ali Sayyed</b><small>System Architect</small></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="link todo" href="REPLACE_WITH_LINKEDIN_DANIEL" target="_blank" rel="noopener">
+        <span class="ico">👤</span>
+        <span class="meta"><b>Daniel Koshy</b><small>Circuit Design</small></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="link todo" href="REPLACE_WITH_LINKEDIN_RAHMAN" target="_blank" rel="noopener">
+        <span class="ico">👤</span>
+        <span class="meta"><b>Mohammed Abdul Rahman</b><small>Finance</small></span>
+        <span class="arrow">→</span>
+      </a>
+    </nav>
+
+    <footer>
+      ECTE 250 · Team 2 · Arc Tech<br />
+      University of Wollongong in Dubai
+    </footer>
+  </div>
+</body>
+</html>

@@ -11,6 +11,14 @@
     <main id="app">
       <canvas id="world" aria-label="NurdleDNA live 3D industrial digital twin"></canvas>
 
+      <!-- Mobile-only: toggles the control/dashboard panels so the 3D model
+           is fully visible by default on phones (CSS-only checkbox hack). -->
+      <input type="checkbox" id="hudToggle" hidden>
+      <label for="hudToggle" class="hud-toggle-btn" aria-label="Show or hide controls">
+        <span class="label-open">&#9776;&nbsp;Controls</span>
+        <span class="label-close">&#10005;&nbsp;Close</span>
+      </label>
+
       <div id="pausedOverlay" class="paused-overlay" hidden aria-live="polite">
         <div class="paused-card">
           <span class="paused-dot" aria-hidden="true"></span>

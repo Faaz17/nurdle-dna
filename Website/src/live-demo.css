@@ -648,3 +648,43 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   font-family: ui-monospace, SF Mono, Menlo, monospace;
   text-align: right;
 }
+
+/* ─── Mobile (phones) ───────────────────────────────────────────
+   Scoped to small screens only — desktop/tablet layout is unchanged.
+   Fixes the sticky header (brand + 5-item nav + status no longer
+   crammed into one row) and tightens spacing for narrow screens. */
+@media (max-width: 720px) {
+  .demo-header {
+    display: flex;              /* override the 3-col grid on phones */
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 12px;
+    padding: 12px 16px;
+  }
+  .demo-brand { margin-right: auto; font-size: 14px; }
+  .demo-net   { font-size: 10px; padding: 5px 10px; }
+
+  /* Nav drops to its own full-width row and scrolls horizontally
+     so all five links stay reachable without overflowing. */
+  .demo-nav {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: flex-start;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .demo-nav::-webkit-scrollbar { display: none; }
+  .demo-nav a { white-space: nowrap; padding: 7px 12px; font-size: 12px; }
+
+  .demo-main  { padding-left: 16px; padding-right: 16px; }
+  .demo-intro { margin-bottom: 24px; }
+  .sim-banner { padding-left: 16px; padding-right: 16px; font-size: 0.75rem; }
+}
+
+@media (max-width: 420px) {
+  .demo-nav a { padding: 7px 10px; font-size: 11px; }
+  .sensor-value strong { font-size: 26px; }   /* keep big numbers from clipping */
+}

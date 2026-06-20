@@ -34,6 +34,13 @@
     h1 { font-size:1.6rem; letter-spacing:.5px; }
     h1 span { color:var(--teal); }
     .tag { color:var(--muted); font-size:.9rem; margin-top:6px; font-style:italic; }
+    .summary {
+      background:linear-gradient(180deg, rgba(54,224,200,.07), rgba(95,214,255,.04));
+      border:1px solid var(--line); border-radius:14px;
+      padding:16px 18px; margin:18px 0 4px;
+      color:#c7d6de; font-size:.9rem; line-height:1.6; text-align:left;
+    }
+    .summary b { color:var(--teal); font-weight:700; }
     .links { display:flex; flex-direction:column; gap:12px; margin-top:8px; }
     a.link {
       display:flex; align-items:center; gap:14px; text-decoration:none;
@@ -68,6 +75,16 @@
       <p class="tag">"Watch every stream, all the time."</p>
     </header>
 
+    <p class="summary">
+      <b>NurdleDNA</b> is an inline IoT device that detects microplastic
+      &ldquo;nurdle&rdquo; pellets in oil pipelines and industrial water in about
+      <b>3 seconds</b> &mdash; automatically closing a valve to stop the flow,
+      capturing physical evidence, and logging an immutable audit trail to the cloud.
+      Built on a dual-processor design (NVIDIA Jetson Nano AI vision + Arduino safety
+      FSM), it&rsquo;s the first <b>sub-$250</b> inline system of its kind, bringing
+      affordable, real-time microplastic monitoring to the UAE&rsquo;s petrochemical industry.
+    </p>
+
     <div class="section-label">Explore the project</div>
     <nav class="links">
       <a class="link" href="./index.html">
@@ -87,8 +104,13 @@
       </a>
     </nav>
 
-    <div class="section-label">Source code</div>
+    <div class="section-label">Research &amp; code</div>
     <nav class="links">
+      <a class="link" href="./NurdleDNA-paper.pdf" target="_blank" rel="noopener">
+        <span class="ico">📄</span>
+        <span class="meta"><b>Research Paper</b><small>Full technical paper (PDF)</small></span>
+        <span class="arrow">→</span>
+      </a>
       <a class="link" href="https://github.com/Faaz17/nurdle-dna" target="_blank" rel="noopener">
         <span class="ico">💻</span>
         <span class="meta"><b>GitHub Repo</b><small>Firmware, Jetson agent &amp; site</small></span>
@@ -111,6 +133,11 @@
       <a class="link" href="https://www.linkedin.com/in/daniel-koshy-4899522a6" target="_blank" rel="noopener">
         <span class="ico">👤</span>
         <span class="meta"><b>Daniel Koshy</b><small>Circuit Design</small></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="link" href="https://www.linkedin.com/in/abdul-rehman-mohammed-484450386" target="_blank" rel="noopener">
+        <span class="ico">👤</span>
+        <span class="meta"><b>Mohammed Abdul Rahman</b><small>Finance</small></span>
         <span class="arrow">→</span>
       </a>
     </nav>

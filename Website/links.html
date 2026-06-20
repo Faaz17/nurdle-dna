@@ -65,9 +65,47 @@
     .todo { opacity:.6; }
     .todo .arrow::after { content:" • edit me"; font-size:.62rem; color:var(--muted); }
     footer { text-align:center; color:var(--muted); font-size:.76rem; margin-top:30px; line-height:1.6; }
+
+    /* ── Intro video splash ── */
+    #introOverlay {
+      position:fixed; inset:0; z-index:1000; background:#000;
+      display:flex; align-items:center; justify-content:center;
+      transition:opacity .5s ease;
+    }
+    #introOverlay.hide { opacity:0; pointer-events:none; }
+    #introVideo { width:100%; height:100%; object-fit:contain; background:#000; }
+    .intro-btn {
+      position:absolute; z-index:2; border:none; cursor:pointer;
+      font:700 14px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    .intro-sound {
+      bottom:26px; left:50%; transform:translateX(-50%);
+      color:#04222b; background:linear-gradient(135deg,var(--teal-2),var(--teal));
+      padding:12px 20px; border-radius:999px; box-shadow:0 6px 20px rgba(0,0,0,.45);
+    }
+    .intro-skip {
+      top:16px; right:16px; color:#fff; background:rgba(0,0,0,.45);
+      border:1px solid rgba(255,255,255,.35); padding:9px 16px; border-radius:999px;
+      backdrop-filter:blur(6px);
+    }
+    .intro-play {
+      width:96px; height:96px; border-radius:50%; font-size:34px; color:#04222b;
+      background:linear-gradient(135deg,var(--teal-2),var(--teal));
+      box-shadow:0 8px 30px rgba(0,0,0,.5);
+    }
   </style>
 </head>
 <body>
+  <!-- Intro video splash: plays on load, then reveals the links. -->
+  <div id="introOverlay">
+    <video id="introVideo" playsinline muted preload="auto">
+      <source src="./intro.mp4" type="video/mp4">
+    </video>
+    <button id="introPlay"  class="intro-btn intro-play"  type="button" hidden aria-label="Play intro">&#9654;</button>
+    <button id="introSound" class="intro-btn intro-sound" type="button" hidden>&#128266;&nbsp;Tap for sound</button>
+    <button id="introSkip"  class="intro-btn intro-skip"  type="button">Skip &#9656;</button>
+  </div>
+
   <div class="wrap">
     <header>
       <div class="logo">N</div>
@@ -147,5 +185,58 @@
       University of Wollongong in Dubai
     </footer>
   </div>
+
+  <script>
+    (function () {
+      var ov   = document.getElementById('introOverlay');
+      var v    = document.getElementById('introVideo');
+      var play = document.getElementById('introPlay');
+      var snd  = document.getElementById('introSound');
+      var skip = document.getElementById('introSkip');
+      if (!ov) return;
+
+      var resolved = false;            // true once playing / play-button shown / closed
+
+      function close() {
+        resolved = true;
+        ov.classList.add('hide');
+        document.documentElement.style.overflow = '';
+        try { v.pause(); } catch (e) {}
+        try { sessionStorage.setItem('introSeen', '1'); } catch (e) {}
+        setTimeout(function () { ov.style.display = 'none'; }, 550);
+      }
+
+      // Only show the splash once per browsing session.
+      var seen = false;
+      try { seen = sessionStorage.getItem('introSeen') === '1'; } catch (e) {}
+      if (seen) { ov.style.display = 'none'; return; }
+
+      document.documentElement.style.overflow = 'hidden';
+
+      // Try muted autoplay (phones allow this). If blocked, offer a Play button.
+      v.muted = true;
+      var p = v.play();
+      if (p && p.catch) {
+        p.catch(function () {
+          if (resolved) return;
+          resolved = true;            // waiting on the user now
+          play.hidden = false;
+        });
+      }
+
+      v.addEventListener('playing', function () { resolved = true; snd.hidden = false; });
+      v.addEventListener('ended', close);
+      v.addEventListener('error', function () { if (!resolved) close(); });
+
+      play.addEventListener('click', function () {
+        play.hidden = true; v.muted = false; v.play(); snd.hidden = true;
+      });
+      snd.addEventListener('click', function () { v.muted = false; snd.hidden = true; });
+      skip.addEventListener('click', close);
+
+      // Safety net: if the video never starts (missing file, stalled), reveal the links.
+      setTimeout(function () { if (!resolved) close(); }, 7000);
+    })();
+  </script>
 </body>
 </html>

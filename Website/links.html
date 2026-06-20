@@ -89,21 +89,26 @@
       backdrop-filter:blur(6px);
     }
     .intro-play {
-      width:96px; height:96px; border-radius:50%; font-size:34px; color:#04222b;
+      width:104px; height:104px; border-radius:50%; font-size:38px; color:#04222b;
       background:linear-gradient(135deg,var(--teal-2),var(--teal));
       box-shadow:0 8px 30px rgba(0,0,0,.5);
+    }
+    .intro-hint {
+      position:absolute; z-index:2; left:50%; top:calc(50% + 72px); transform:translateX(-50%);
+      color:#cfe8f6; font:600 14px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      letter-spacing:.04em; text-shadow:0 2px 8px rgba(0,0,0,.6); pointer-events:none; white-space:nowrap;
     }
   </style>
 </head>
 <body>
   <!-- Intro video splash: plays on load, then reveals the links. -->
   <div id="introOverlay">
-    <video id="introVideo" playsinline muted preload="auto">
+    <video id="introVideo" playsinline preload="auto">
       <source src="./intro.mp4" type="video/mp4">
     </video>
-    <button id="introPlay"  class="intro-btn intro-play"  type="button" hidden aria-label="Play intro">&#9654;</button>
-    <button id="introSound" class="intro-btn intro-sound" type="button" hidden>&#128266;&nbsp;Tap for sound</button>
-    <button id="introSkip"  class="intro-btn intro-skip"  type="button">Skip &#9656;</button>
+    <button id="introPlay" class="intro-btn intro-play" type="button" hidden aria-label="Play intro with sound">&#9654;</button>
+    <div id="introHint" class="intro-hint" hidden>Tap to play with sound</div>
+    <button id="introSkip" class="intro-btn intro-skip" type="button">Skip &#9656;</button>
   </div>
 
   <div class="wrap">
@@ -191,7 +196,7 @@
       var ov   = document.getElementById('introOverlay');
       var v    = document.getElementById('introVideo');
       var play = document.getElementById('introPlay');
-      var snd  = document.getElementById('introSound');
+      var hint = document.getElementById('introHint');
       var skip = document.getElementById('introSkip');
       if (!ov) return;
 
@@ -206,6 +211,14 @@
         setTimeout(function () { ov.style.display = 'none'; }, 550);
       }
 
+      function showPlay() { play.hidden = false; if (hint) hint.hidden = false; }
+      function start() {
+        v.muted = false;               // sound ON
+        play.hidden = true; if (hint) hint.hidden = true;
+        var pr = v.play();
+        if (pr && pr.catch) pr.catch(function () { showPlay(); });
+      }
+
       // Only show the splash once per browsing session.
       var seen = false;
       try { seen = sessionStorage.getItem('introSeen') === '1'; } catch (e) {}
@@ -213,28 +226,22 @@
 
       document.documentElement.style.overflow = 'hidden';
 
-      // Try muted autoplay (phones allow this). If blocked, offer a Play button.
-      v.muted = true;
+      // Try to start WITH SOUND. Phones block sound-on autoplay, so on failure
+      // we show a Play button — one tap starts it with sound from the beginning.
+      v.muted = false;
       var p = v.play();
-      if (p && p.catch) {
-        p.catch(function () {
-          if (resolved) return;
-          resolved = true;            // waiting on the user now
-          play.hidden = false;
-        });
-      }
+      if (p && p.catch) p.catch(function () { if (resolved) return; resolved = true; showPlay(); });
 
-      v.addEventListener('playing', function () { resolved = true; snd.hidden = false; });
+      v.addEventListener('playing', function () { resolved = true; });
       v.addEventListener('ended', close);
       v.addEventListener('error', function () { if (!resolved) close(); });
 
-      play.addEventListener('click', function () {
-        play.hidden = true; v.muted = false; v.play(); snd.hidden = true;
-      });
-      snd.addEventListener('click', function () { v.muted = false; snd.hidden = true; });
-      skip.addEventListener('click', close);
+      play.addEventListener('click', function (e) { e.stopPropagation(); start(); });
+      ov.addEventListener('click', function () { if (v.paused) start(); });   // tap anywhere
+      skip.addEventListener('click', function (e) { e.stopPropagation(); close(); });
 
-      // Safety net: if the video never starts (missing file, stalled), reveal the links.
+      // Safety net: if the video errors/stalls (and isn't just waiting on a tap),
+      // reveal the links so the page never gets stuck.
       setTimeout(function () { if (!resolved) close(); }, 7000);
     })();
   </script>

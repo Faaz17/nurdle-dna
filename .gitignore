@@ -39,3 +39,12 @@ Jetson Start/*.img
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Local-only — NOT for the public repo
+# Journal paper is under active peer review; keep drafts/reviewer materials local
+Journal Paper/
+# Scratch website mirror (HTTrack) and packaged training-run duplicate
+testcopy/
+nurdle_run.zip
+# A teammate/friend's unrelated document — not a NurdleDNA artefact
+Friends project/

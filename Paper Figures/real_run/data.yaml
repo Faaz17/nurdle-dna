@@ -1,0 +1,30 @@
+names:
+- Air bubble
+- Anthropogenic
+- Background material
+- Cellulose filter fibre
+- Cotton
+- Diatom
+- Easylift tab
+- Edge of slide
+- Fragment
+- Glass filter fibre
+- Hair
+- Hair textile
+- Insect matter
+- Microbead
+- Microfibre
+- Natural material
+- Pen
+- Salt
+- Unknown
+nc: 19
+roboflow:
+  license: CC BY 4.0
+  project: microplastics-t0ddd
+  url: https://universe.roboflow.com/uni-oahuo/microplastics-t0ddd/dataset/6
+  version: 6
+  workspace: uni-oahuo
+test: ../test/images
+train: ../train/images
+val: ../valid/images

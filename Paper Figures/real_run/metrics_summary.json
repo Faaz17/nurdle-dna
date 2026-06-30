@@ -1,0 +1,27 @@
+{
+  "mAP50": 0.3109,
+  "mAP50_95": 0.2088,
+  "precision": 0.3956,
+  "recall": 0.3575,
+  "per_class_mAP50_95": {
+    "Air bubble": 0.488,
+    "Anthropogenic": 0.0087,
+    "Background material": 0.2157,
+    "Cellulose filter fibre": 0.2719,
+    "Cotton": 0.3243,
+    "Diatom": 0.3164,
+    "Easylift tab": 0.0,
+    "Edge of slide": 0.116,
+    "Fragment": 0.4402,
+    "Glass filter fibre": 0.189,
+    "Hair": 0.0459,
+    "Hair textile": 0.4073,
+    "Insect matter": 0.0,
+    "Microbead": 0.0,
+    "Microfibre": 0.4922,
+    "Natural material": 0.0241,
+    "Pen": 0.6282,
+    "Salt": 0.0,
+    "Unknown": 0.0
+  }
+}

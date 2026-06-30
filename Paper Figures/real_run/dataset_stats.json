@@ -1,0 +1,93 @@
+{
+  "class_names": [
+    "Air bubble",
+    "Anthropogenic",
+    "Background material",
+    "Cellulose filter fibre",
+    "Cotton",
+    "Diatom",
+    "Easylift tab",
+    "Edge of slide",
+    "Fragment",
+    "Glass filter fibre",
+    "Hair",
+    "Hair textile",
+    "Insect matter",
+    "Microbead",
+    "Microfibre",
+    "Natural material",
+    "Pen",
+    "Salt",
+    "Unknown"
+  ],
+  "splits": {
+    "train": {
+      "images": 2171,
+      "instances_per_class": {
+        "Air bubble": 10101,
+        "Anthropogenic": 30,
+        "Background material": 155060,
+        "Cellulose filter fibre": 2719,
+        "Cotton": 709,
+        "Diatom": 6695,
+        "Easylift tab": 7,
+        "Edge of slide": 37,
+        "Fragment": 257,
+        "Glass filter fibre": 2267,
+        "Hair": 58,
+        "Hair textile": 56,
+        "Insect matter": 8,
+        "Microbead": 3,
+        "Microfibre": 1480,
+        "Natural material": 121,
+        "Pen": 347,
+        "Salt": 48,
+        "Unknown": 9
+      }
+    },
+    "valid": {
+      "images": 621,
+      "instances_per_class": {
+        "Air bubble": 2796,
+        "Anthropogenic": 6,
+        "Background material": 47202,
+        "Cellulose filter fibre": 917,
+        "Cotton": 248,
+        "Diatom": 2434,
+        "Easylift tab": 4,
+        "Edge of slide": 13,
+        "Fragment": 89,
+        "Glass filter fibre": 823,
+        "Hair": 11,
+        "Hair textile": 11,
+        "Insect matter": 3,
+        "Microbead": 1,
+        "Microfibre": 387,
+        "Natural material": 38,
+        "Pen": 116,
+        "Salt": 18,
+        "Unknown": 4
+      }
+    },
+    "test": {
+      "images": 310,
+      "instances_per_class": {
+        "Air bubble": 1426,
+        "Anthropogenic": 3,
+        "Background material": 22085,
+        "Cellulose filter fibre": 387,
+        "Cotton": 124,
+        "Diatom": 1015,
+        "Edge of slide": 5,
+        "Fragment": 35,
+        "Glass filter fibre": 294,
+        "Hair": 6,
+        "Hair textile": 7,
+        "Microfibre": 208,
+        "Natural material": 23,
+        "Pen": 61,
+        "Salt": 6
+      }
+    }
+  }
+}

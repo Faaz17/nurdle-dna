@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>NurdleDNA Judge Q&amp;A</title>
+<style>
+  @page { size: A4 portrait; margin: 13mm 14mm; }
+  * { box-sizing:border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color:#10222e; font-size:10.6px; line-height:1.42; margin:0; }
+  h1 { font-size:21px; margin:0 0 2px; color:#063044; }
+  .sub { color:#5b7484; font-size:10px; margin:0 0 10px; }
+  .strip { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 12px; }
+  .chip { background:#e7f6fb; border:1px solid #bfe6f2; color:#06556e; border-radius:20px; padding:3px 10px; font-weight:700; font-size:9.5px; }
+  h2 { font-size:12.5px; color:#fff; background:linear-gradient(90deg,#0e7ea3,#13b3c4); padding:4px 9px; border-radius:5px; margin:13px 0 7px; }
+  h2.ai { background:linear-gradient(90deg,#0b8a5a,#16b27a); }
+  .qa { margin:0 0 6px; }
+  .q { font-weight:700; color:#0a3a4f; }
+  .a { color:#23404f; }
+  .a b, .q b { color:#0b8a5a; }
+  .note { background:#fff7e6; border:1px solid #ffd98a; border-radius:6px; padding:8px 10px; margin-top:8px; }
+  .note .q { color:#8a5a00; }
+</style></head><body>
+
+<h1>NurdleDNA &mdash; Judge Q&amp;A Cheat Sheet</h1>
+<p class="sub">ECTE 250 &middot; Team 2 (Arc Tech) &middot; University of Wollongong in Dubai &mdash; lead with the headline number; keep each answer ~20&ndash;30 s.</p>
+<div class="strip">
+  <span class="chip">~3 s detection</span><span class="chip">$232 &rarr; $180 / 100 units</span>
+  <span class="chip">0 false alarms (30 min)</span><span class="chip">230,000 t/yr to oceans</span>
+  <span class="chip">19 AI classes</span><span class="chip">valve close ~300 ms</span><span class="chip">~15 W</span>
+</div>
+
+<h2>Problem &amp; Motivation</h2>
+<div class="qa"><span class="q">What is a nurdle?</span> <span class="a">2&ndash;5 mm plastic pellets, the raw material for all plastics; the <b>2nd-largest</b> primary ocean microplastic source (~230,000 t/yr).</span></div>
+<div class="qa"><span class="q">Why the UAE / why now?</span> <span class="a">Polymer &amp; petrochemical hub (Borouge, ADNOC) &rarr; high spill risk. cf. the X-Press Pearl disaster &mdash; the largest nurdle spill in history.</span></div>
+<div class="qa"><span class="q">Who is the customer?</span> <span class="a">Port operators, polymer plants, pellet-handling facilities &mdash; any industrial outfall or drain stack.</span></div>
+
+<h2 class="ai">AI &amp; Computer Vision &mdash; expect deep questions here</h2>
+<div class="qa"><span class="q">Which model, and why?</span> <span class="a">YOLOv8n &mdash; the smallest YOLOv8 (~3M params), real-time on the edge; exported to <b>ONNX</b> so it runs on the Jetson via onnxruntime with no PyTorch/Ultralytics on-device (~100 MB deps).</span></div>
+<div class="qa"><span class="q">Walk me through the inference pipeline.</span> <span class="a">Frame &rarr; resize 640&times;640 &rarr; ONNX inference &rarr; NMS (IoU 0.45, conf 0.25) &rarr; central-60% ROI mask &rarr; class filter &rarr; count &rarr; EMA smoothing &rarr; 2.5 s confirmation &rarr; FSM state.</span></div>
+<div class="qa"><span class="q">Why ONNX, not PyTorch or TensorRT?</span> <span class="a">ONNX runtime is lightweight and portable &mdash; full torch won&rsquo;t install cleanly on a Jetson Nano. TensorRT is our next optimization for higher FPS.</span></div>
+<div class="qa"><span class="q">How accurate is it?</span> <span class="a">Per-class mAP@50: Pen 0.81, Air-bubble 0.75, Microfibre 0.72, Fragment 0.60. Overall mAP is lower because it spans 19 classes &mdash; we cite the relevant per-class figures.</span></div>
+<div class="qa"><span class="q">What does mAP@50 mean?</span> <span class="a">Mean Average Precision at IoU 0.50 &mdash; how well predicted boxes match ground truth across classes; the standard object-detection metric.</span></div>
+<div class="qa"><span class="q">How do you avoid FALSE POSITIVES?</span> <span class="a">Hybrid YOLO + HSV plus four filters: ROI mask, circularity filter, EMA smoothing, and a 2.5 s confirmation timer; background/air-bubble classes excluded &rarr; <b>0 false alarms in 30 min</b>.</span></div>
+<div class="qa"><span class="q">What about FALSE NEGATIVES (missed pellets)?</span> <span class="a">HSV white-blob detection catches pellets YOLO misses; gas/turbidity sensors are a second line; confidence threshold tuned for sensitivity.</span></div>
+<div class="qa"><span class="q">Edge or cloud inference?</span> <span class="a">100% on-device &mdash; no cloud dependency for detection. Low latency, works offline, data stays local.</span></div>
+<div class="qa"><span class="q">Training details?</span> <span class="a">Transfer-learned YOLOv8n on Roboflow microplastics-t0ddd v6 (3,102 images, 19 classes), 25 epochs on a Colab T4 GPU.</span></div>
+<div class="qa"><span class="q">Why not classical CV alone?</span> <span class="a">HSV finds white blobs but can&rsquo;t classify type or handle varied appearance; YOLO classifies. Hybrid = recall of CV + intelligence of the CNN.</span></div>
+<div class="qa"><span class="q">Changing lighting / murky water?</span> <span class="a">Central ROI + tuned HSV + the confirmation timer reject glare and flicker; a UV LED gives controlled illumination; the turbidity sensor cross-checks.</span></div>
+<div class="qa"><span class="q">How would you improve accuracy?</span> <span class="a">More diverse field data + active learning (retrain on captured proof frames), TensorRT, higher-res ROI crops, and consolidating the 19 classes.</span></div>
+<div class="qa"><span class="q">Does it learn / drift over time?</span> <span class="a">Every alarm saves a proof image to the cloud &mdash; a labelled feedback dataset for periodic retraining.</span></div>
+<div class="qa"><span class="q">What is the &lsquo;Density Index&rsquo;?</span> <span class="a">A 0&ndash;100 score derived from the live pellet count &mdash; one at-a-glance contamination level for the dashboard.</span></div>
+<div class="qa"><span class="q">Could you run a bigger model?</span> <span class="a">Yes (YOLOv8s/m) for accuracy, but it costs FPS on the Nano; nano was chosen for real-time edge inference.</span></div>
+
+<h2>Electronics, FSM &amp; Safety</h2>
+<div class="qa"><span class="q">Why two processors?</span> <span class="a">Jetson = AI vision; the <b>Arduino owns the valve</b> via a deterministic 5-state Moore FSM. If the Jetson fails, the Arduino still alarms from analog sensors &mdash; safety-critical separation.</span></div>
+<div class="qa"><span class="q">Explain the FSM.</span> <span class="a">S0 Init &rarr; S1 OK &rarr; S2 Caution &rarr; S3 ALARM (<b>latched</b>) &rarr; reset. Latched so contamination can&rsquo;t silently clear; reset by operator button or remote dashboard.</span></div>
+<div class="qa"><span class="q">Response time?</span> <span class="a">~3 s detection end-to-end; valve closure ~300 ms.</span></div>
+<div class="qa"><span class="q">How do the boards communicate?</span> <span class="a">JSON over USB serial at 5 Hz, with strict parsing to reject noise.</span></div>
+
+<h2>Testing, Cost &amp; Scale</h2>
+<div class="qa"><span class="q">How did you test it?</span> <span class="a">30-min bench test (varied lighting, no pellets &rarr; 0 false alarms); redundancy test (Jetson unplugged &rarr; Arduino still alarmed); measured latency &amp; valve timing.</span></div>
+<div class="qa"><span class="q">Does it work in real conditions?</span> <span class="a">Bench-validated today; field trials with real flow and turbidity are the next step (be honest).</span></div>
+<div class="qa"><span class="q">Cost &amp; scale?</span> <span class="a">$232 prototype &rarr; ~$180 at 100 units; ~15 W, ~$15/yr power. Each unit has a unique Firebase ID; a port equips 4&ndash;10 bays for less than one annual lab contract.</span></div>
+<div class="qa"><span class="q">What&rsquo;s next?</span> <span class="a">Oil-droplet detection (retrain the model) and a UV-fluorescence upgrade for forensic source-tracing.</span></div>
+
+<h2>Sustainability &amp; Hard Questions</h2>
+<div class="qa"><span class="q">Which SDGs?</span> <span class="a">14 Life Below Water, 9 Industry/Innovation, 6 Clean Water, 12 Responsible Consumption.</span></div>
+<div class="qa"><span class="q">Real-world impact?</span> <span class="a">Stops contamination <b>at source</b>, before it reaches the Gulf &mdash; prevention with an audit trail, not after-the-fact cleanup.</span></div>
+<div class="qa"><span class="q">Prove an event to a regulator?</span> <span class="a">Immutable Firebase log: timestamp, captured mass, gas, density index, bay ID &mdash; searchable &amp; exportable.</span></div>
+<div class="qa"><span class="q">Why not just filter everything?</span> <span class="a">Filters clog and can&rsquo;t identify type, log evidence, or prove compliance &mdash; you lose the audit trail.</span></div>
+<div class="qa"><span class="q">What are the limitations?</span> <span class="a">Bench- not field-validated; AI depends on water clarity/lighting; the cartridge needs periodic maintenance.</span></div>
+
+<div class="note">
+<div class="q">&#9888; Be honest: live vs designed (pre-agree your wording)</div>
+<div class="a"><b>Live now:</b> camera + YOLO detection, gas sensor, FSM + LED states, Firebase dashboard, remote reset.<br>
+<b>Designed / shown in the digital twin (not on the current breadboard):</b> servo pinch valve (removed from the board &mdash; the valve <i>logic</i> is live and shown on the dashboard/twin), load-cell mass capture, LDR turbidity. Say &ldquo;the control logic drives it &mdash; here it is on the twin,&rdquo; never claim a physical part actuates if it isn&rsquo;t wired.</div>
+</div>
+
+</body></html>

@@ -48,3 +48,7 @@ testcopy/
 nurdle_run.zip
 # A teammate/friend's unrelated document — not a NurdleDNA artefact
 Friends project/
+
+# Local agent config + scratch
+.codex/
+tmp/
